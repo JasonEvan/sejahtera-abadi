@@ -12,7 +12,7 @@ import ReceiptIcon from "@mui/icons-material/Receipt";
 import { usePathname } from "next/navigation";
 import { Box, Button, Typography } from "@mui/material";
 
-const menus = [
+export const menus = [
   { label: "Home", path: "/dashboard", icon: <HomeIcon /> },
   {
     label: "Tambah",
@@ -38,6 +38,7 @@ export default function Sidebar() {
         borderRight: "1px solid #ccc",
         height: "100vh",
         padding: 2,
+        display: { xs: "none", sm: "none", md: "block", lg: "block" },
       }}
     >
       <Typography variant="h5" gutterBottom>
