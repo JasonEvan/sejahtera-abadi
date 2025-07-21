@@ -1,0 +1,192 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model beli {
+  tipe         String   @default("B") @db.Char(2)
+  id           Int      @id @default(autoincrement())
+  id_client    Int
+  nomor_nota   String   @db.VarChar(10)
+  tanggal_nota DateTime @db.Date
+  nama_barang  String   @db.VarChar(50)
+  harga_barang Int
+  qty_barang   Int
+  total_harga  Int
+  diskon_nota  Float
+  created_at   DateTime @default(now()) @db.Timestamp(0)
+
+  client client   @relation(fields: [id_client], references: [id])
+  nota   bnota    @relation(fields: [nomor_nota], references: [nomor_nota])
+  bretur bretur[]
+}
+
+model blunas {
+  id              Int      @id @default(autoincrement())
+  nomor_transaksi String   @db.VarChar(10)
+  tanggal_lunas   DateTime @db.Date
+  id_client       Int
+  nomor_nota      String   @db.VarChar(10)
+  lunas_nota      Int
+
+  client client @relation(fields: [id_client], references: [id])
+  nota   bnota  @relation(fields: [nomor_nota], references: [nomor_nota])
+}
+
+model bnota {
+  id           Int      @id @default(autoincrement())
+  id_client    Int
+  nomor_nota   String   @unique @db.VarChar(10)
+  tanggal_nota DateTime @db.Date
+  nilai_nota   Int
+  diskon_nota  Float
+  lunas_nota   Int
+  diskon_lunas Float
+  saldo_nota   Int
+
+  client client   @relation(fields: [id_client], references: [id])
+  beli   beli[]
+  blunas blunas[]
+  bretur bretur[]
+}
+
+model bretur {
+  tipe          String    @default("BR") @db.Char(3)
+  id            Int       @id @default(autoincrement())
+  id_client     Int
+  id_beli       Int
+  nomor_nota    String    @db.VarChar(10)
+  tanggal_nota  DateTime  @db.Date
+  nama_barang   String    @db.VarChar(50)
+  harga_barang  Int
+  qty_barang    Int
+  total_harga   Int
+  tanggal_retur DateTime? @db.Date
+
+  client client @relation(fields: [id_client], references: [id])
+  beli   beli   @relation(fields: [id_beli], references: [id])
+  nota   bnota  @relation(fields: [nomor_nota], references: [nomor_nota])
+}
+
+model client {
+  id               Int     @id @default(autoincrement())
+  nama_client      String  @db.VarChar(50)
+  kota_client      String? @db.VarChar(50)
+  telp_client      String? @db.VarChar(20)
+  alamat_client    String? @db.VarChar(50)
+  sldawal_utang    Int     @default(0)
+  sldawal_piutang  Int     @default(0)
+  sldakhir_utang   Int     @default(0)
+  sldakhir_piutang Int     @default(0)
+  hp_client        String? @db.VarChar(20)
+
+  bnota  bnota[]
+  beli   beli[]
+  blunas blunas[]
+  bretur bretur[]
+
+  jnota  jnota[]
+  jual   jual[]
+  jlunas jlunas[]
+  jretur jretur[]
+}
+
+model jlunas {
+  id              Int      @id @default(autoincrement())
+  nomor_transaksi String   @db.VarChar(10)
+  tanggal_lunas   DateTime @db.Date
+  id_client       Int
+  nomor_nota      String   @db.VarChar(10)
+  lunas_nota      Int
+
+  client client @relation(fields: [id_client], references: [id])
+  nota   jnota  @relation(fields: [nomor_nota], references: [nomor_nota])
+}
+
+model jnota {
+  id           Int      @id @default(autoincrement())
+  id_client    Int
+  nomor_nota   String   @unique @db.VarChar(10)
+  tanggal_nota DateTime @db.Date
+  nilai_nota   Int
+  diskon_nota  Float
+  lunas_nota   Int
+  diskon_lunas Float
+  saldo_nota   Int
+
+  client client   @relation(fields: [id_client], references: [id])
+  jlunas jlunas[]
+  jual   jual[]
+  jretur jretur[]
+}
+
+model jretur {
+  tipe          String    @default("JR") @db.Char(3)
+  id            Int       @id @default(autoincrement())
+  id_client     Int
+  id_jual       Int
+  nomor_nota    String    @db.VarChar(10)
+  tanggal_nota  DateTime  @db.Date
+  nama_barang   String    @db.VarChar(50)
+  harga_barang  Int
+  qty_barang    Int
+  total_harga   Int
+  tanggal_retur DateTime? @db.Date
+  nama_sales    String    @db.VarChar(100)
+
+  client   client   @relation(fields: [id_client], references: [id])
+  jual     jual     @relation(fields: [id_jual], references: [id])
+  nota     jnota    @relation(fields: [nomor_nota], references: [nomor_nota])
+  salesman salesman @relation(fields: [nama_sales], references: [nama_sales])
+}
+
+model jual {
+  tipe         String   @default("J") @db.Char(2)
+  id           Int      @id @default(autoincrement())
+  id_client    Int
+  nomor_nota   String   @db.VarChar(10)
+  tanggal_nota DateTime @db.Date
+  nama_barang  String   @db.VarChar(50)
+  harga_barang Int
+  qty_barang   Int
+  total_harga  Int
+  diskon_nota  Float
+  created_at   DateTime @default(now()) @db.Timestamp(0)
+  nama_sales   String   @db.VarChar(100)
+
+  client   client   @relation(fields: [id_client], references: [id])
+  nota     jnota    @relation(fields: [nomor_nota], references: [nomor_nota])
+  jretur   jretur[]
+  salesman salesman @relation(fields: [nama_sales], references: [nama_sales])
+}
+
+model salesman {
+  id            Int     @id @default(autoincrement())
+  nama_sales    String  @unique @db.VarChar(100)
+  no_depan      Int?
+  no_nota       Int
+  no_telp_sales String? @db.VarChar(20)
+  kode_sales    String  @db.VarChar(20)
+
+  jretur jretur[]
+  jual   jual[]
+}
+
+model stock {
+  id            Int    @id @default(autoincrement())
+  nama_barang   String @db.VarChar(50)
+  stock_awal    Int
+  stock_akhir   Int
+  harga_barang  Int    @default(0)
+  qty_in        Int    @default(0)
+  qty_out       Int    @default(0)
+  jual_barang   Int?
+  satuan_barang String @db.VarChar(10)
+  modal         Int
+  rusak_barang  Int    @default(0)
+}
