@@ -17,7 +17,15 @@ export default function DashboardLayout({
     >
       <Sidebar />
       <CustomAppBar />
-      <Box sx={{ flexGrow: 10, p: 2 }}>{children}</Box>
+      <Box
+        sx={{
+          flexGrow: 10,
+          p: 2,
+          marginLeft: { xs: 0, sm: 0, md: "230px", lg: "230px" },
+        }}
+      >
+        {children}
+      </Box>
     </Box>
   );
 }

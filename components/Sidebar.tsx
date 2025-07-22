@@ -34,9 +34,13 @@ export default function Sidebar() {
   return (
     <Box
       sx={{
+        position: "fixed",
+        top: 0,
+        left: 0,
         flexGrow: 1,
         borderRight: "1px solid #ccc",
         height: "100vh",
+        width: "230px",
         padding: 2,
         display: { xs: "none", sm: "none", md: "block", lg: "block" },
       }}
