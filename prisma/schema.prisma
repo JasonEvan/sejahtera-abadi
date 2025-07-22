@@ -75,7 +75,7 @@ model bretur {
 
 model client {
   id               Int     @id @default(autoincrement())
-  nama_client      String  @db.VarChar(50)
+  nama_client      String  @unique @db.VarChar(50)
   kota_client      String? @db.VarChar(50)
   telp_client      String? @db.VarChar(20)
   alamat_client    String? @db.VarChar(50)
@@ -179,7 +179,7 @@ model salesman {
 
 model stock {
   id            Int    @id @default(autoincrement())
-  nama_barang   String @db.VarChar(50)
+  nama_barang   String @unique @db.VarChar(50)
   stock_awal    Int
   stock_akhir   Int
   harga_barang  Int    @default(0)
