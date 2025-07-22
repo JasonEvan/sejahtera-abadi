@@ -1,3 +1,5 @@
+"use client";
+
 import { Box, Button, Grid, TextField, Typography } from "@mui/material";
 import * as Yup from "yup";
 import { useFormik } from "formik";
