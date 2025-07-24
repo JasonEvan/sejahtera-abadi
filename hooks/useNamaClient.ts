@@ -13,6 +13,10 @@ export const useNamaClient = () => {
           cache: "no-store",
         });
 
+        if (res.status !== 200) {
+          throw new Error("Failed to fetch client names");
+        }
+
         const clients: { data: client[] } = await res.json();
 
         setNamaClient(clients.data.map((client) => client.nama_client));

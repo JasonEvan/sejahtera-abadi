@@ -121,6 +121,11 @@ export const useJualStore = create<JualStore>()(
           const response = await fetch("/api/barang/menu-jual", {
             cache: "no-store",
           });
+
+          if (response.status !== 200) {
+            throw new Error("Failed to fetch menu barang");
+          }
+
           const { data }: { data: MenuBarangJual[] } = await response.json();
           const finalForm = data.map((item) => ({
             ...item,

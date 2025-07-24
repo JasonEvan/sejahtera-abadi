@@ -12,6 +12,11 @@ export const useLastNomorNota = () => {
       const res = await fetch(`/api/sales?namasales=${namaSales}`, {
         cache: "no-store",
       });
+
+      if (res.status !== 200) {
+        throw new Error("Failed to fetch last nomor nota");
+      }
+
       const { data }: { data: salesman[] } = await res.json();
 
       const lastNum = (data[0].no_nota + 1).toString().padStart(5, "0");

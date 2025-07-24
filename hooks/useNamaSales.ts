@@ -13,6 +13,10 @@ export const useNamaSales = () => {
           cache: "no-store",
         });
 
+        if (res.status !== 200) {
+          throw new Error("Failed to fetch sales names");
+        }
+
         const sales: { data: salesman[] } = await res.json();
 
         setNamaSales(sales.data.map((sale) => sale.nama_sales));
