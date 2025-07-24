@@ -88,6 +88,39 @@ export default function TambahBarang() {
               });
           }
         });
+      } else {
+        fetch("/api/tambah/barang", {
+          cache: "no-store",
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        })
+          .then((response) => {
+            if (response.status !== 201) {
+              throw new Error("Failed to add barang");
+            }
+            return response.json();
+          })
+          .then((data) => {
+            Swal.fire({
+              title: "Success",
+              text: data.message,
+              icon: "success",
+              confirmButtonText: "OK",
+            });
+            formik.resetForm();
+          })
+          .catch((error) => {
+            Swal.fire({
+              title: "Error",
+              text: error.message,
+              icon: "error",
+              confirmButtonText: "OK",
+            });
+            console.error("Error adding barang:", error);
+          });
       }
     },
   });
