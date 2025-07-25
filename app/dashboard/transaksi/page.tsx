@@ -1,11 +1,12 @@
 import CustomTabs from "@/components/Tabs";
+import BeliPage from "@/components/transaksi/beli/BeliPage";
 import JualPage from "@/components/transaksi/jual/JualPage";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 
 export default function TransaksiPage() {
   const tabData = [
     { label: "Jual", content: <JualPage /> },
-    { label: "Beli", content: <Typography>Beli</Typography> },
+    { label: "Beli", content: <BeliPage /> },
   ];
 
   return (

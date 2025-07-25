@@ -1,3 +1,4 @@
+import { DataPembelianI } from "@/hooks/useBeliStore";
 import { DataPenjualanI } from "@/hooks/useJualStore";
 
 export interface TambahBarangFormValues {
@@ -17,6 +18,16 @@ export interface JualDTO {
   tanggalNota: string;
   dataPenjualan: DataPenjualanI[];
   totalPenjualan: number;
+  diskon: number;
+  totalAkhir: number;
+}
+
+export interface BeliDTO {
+  namaClient: string;
+  nomorNota: string;
+  tanggalNota: string;
+  dataPembelian: DataPembelianI[];
+  totalPembelian: number;
   diskon: number;
   totalAkhir: number;
 }
