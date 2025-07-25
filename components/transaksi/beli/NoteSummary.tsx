@@ -13,7 +13,6 @@ export default function NoteSummary() {
     setDiskon,
     setTotalAkhir,
     submitBeli,
-    resetAll,
   } = useBeliStore();
 
   const validationSchema = Yup.object({
@@ -35,8 +34,8 @@ export default function NoteSummary() {
       total: 0,
     },
     validationSchema,
-    onSubmit: () => {
-      Swal.fire({
+    onSubmit: async () => {
+      const result = await Swal.fire({
         title: "Are you sure?",
         text: "All data will be saved",
         icon: "warning",
@@ -44,13 +43,14 @@ export default function NoteSummary() {
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
         confirmButtonText: "Yes, I'm sure!",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          submitBeli();
-          formik.resetForm();
-          resetAll();
-        }
       });
+
+      if (result.isConfirmed) {
+        const success = await submitBeli();
+        if (success) {
+          formik.resetForm();
+        }
+      }
     },
   });
 

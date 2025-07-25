@@ -54,7 +54,7 @@ interface JualStore {
   setMenuBarang: (menuBarang: MenuBarangJual[]) => void;
   setLoading: (loading: boolean) => void;
   fetchMenuBarang: () => Promise<void>;
-  submitJual: () => Promise<void>;
+  submitJual: () => Promise<boolean>;
   resetAll: () => void;
 }
 
@@ -179,6 +179,9 @@ export const useJualStore = create<JualStore>()(
             text: result.message,
             confirmButtonText: "OK",
           });
+
+          get().resetAll();
+          return true;
         } catch (error) {
           Swal.fire({
             icon: "error",
@@ -189,6 +192,8 @@ export const useJualStore = create<JualStore>()(
                 : "An unexpected error occurred",
             confirmButtonText: "OK",
           });
+
+          return false;
         } finally {
           set({ isSubmitting: false });
         }

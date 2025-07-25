@@ -47,7 +47,7 @@ interface BeliStore {
   setDiskon: (diskon: number) => void;
   setTotalAkhir: () => void;
   fetchMenuBarang: () => Promise<void>;
-  submitBeli: () => Promise<void>;
+  submitBeli: () => Promise<boolean>;
   resetAll: () => void;
 }
 
@@ -178,6 +178,9 @@ export const useBeliStore = create<BeliStore>()(
             text: result.message,
             confirmButtonText: "OK",
           });
+
+          get().resetAll();
+          return true;
         } catch (error) {
           Swal.fire({
             icon: "error",
@@ -188,6 +191,8 @@ export const useBeliStore = create<BeliStore>()(
                 : "An unexpected error occurred",
             confirmButtonText: "OK",
           });
+
+          return false;
         } finally {
           set({ isSubmitting: false });
         }
