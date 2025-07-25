@@ -51,8 +51,6 @@ interface JualStore {
   tambahTotalPenjualan: (subtotal: number) => void;
   setDiskon: (diskon: number) => void;
   setTotalAkhir: () => void;
-  setMenuBarang: (menuBarang: MenuBarangJual[]) => void;
-  setLoading: (loading: boolean) => void;
   fetchMenuBarang: () => Promise<void>;
   submitJual: () => Promise<boolean>;
   resetAll: () => void;
@@ -113,8 +111,6 @@ export const useJualStore = create<JualStore>()(
         }));
       },
 
-      setMenuBarang: (menuBarang) => set({ menuBarang }),
-      setLoading: (loading) => set({ isLoading: loading }),
       fetchMenuBarang: async () => {
         set({ isLoading: true });
         try {
