@@ -54,7 +54,7 @@ export default function TambahBarang() {
           cancelButtonText: "No",
         }).then((result) => {
           if (result.isConfirmed) {
-            fetch("/api/tambah/barang", {
+            fetch("/api/barang", {
               cache: "no-store",
               method: "POST",
               headers: {
@@ -89,7 +89,7 @@ export default function TambahBarang() {
           }
         });
       } else {
-        fetch("/api/tambah/barang", {
+        fetch("/api/barang", {
           cache: "no-store",
           method: "POST",
           headers: {

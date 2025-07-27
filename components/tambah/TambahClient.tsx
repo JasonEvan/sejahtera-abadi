@@ -24,7 +24,7 @@ export default function TambahClient() {
     },
     validationSchema,
     onSubmit: (values) => {
-      fetch("/api/tambah/client", {
+      fetch("/api/client", {
         cache: "no-store",
         method: "POST",
         headers: {

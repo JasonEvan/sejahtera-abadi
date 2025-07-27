@@ -24,7 +24,7 @@ export default function TambahSalesman() {
     },
     validationSchema,
     onSubmit: (values) => {
-      fetch("/api/tambah/salesman", {
+      fetch("/api/sales", {
         cache: "no-store",
         method: "POST",
         headers: {
