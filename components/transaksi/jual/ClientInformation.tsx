@@ -34,6 +34,7 @@ export default function ClientInformation() {
     namaSales: namaSalesStore,
     nomorNota,
     tanggalNota,
+    kotaClient,
     fetchMenuBarang,
   } = useJualStore();
 
@@ -46,7 +47,8 @@ export default function ClientInformation() {
 
   const formik = useFormik({
     initialValues: {
-      namaclient: namaLangganan || "",
+      namaclient:
+        (kotaClient ? `${namaLangganan}/${kotaClient}` : namaLangganan) || "",
       namasales: namaSalesStore || "",
       nomornota: nomorNota || "",
       tanggal: tanggalNota || "",
@@ -54,10 +56,11 @@ export default function ClientInformation() {
     validationSchema,
     onSubmit: (values) => {
       setClientInformation(
-        values.namaclient,
+        values.namaclient.split("/")[0],
         values.namasales,
         values.nomornota,
-        values.tanggal
+        values.tanggal,
+        values.namaclient.split("/")[1] ? values.namaclient.split("/")[1] : ""
       );
       setClientInformationDone();
       fetchMenuBarang();

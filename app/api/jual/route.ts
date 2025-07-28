@@ -13,6 +13,7 @@ export async function POST(request: NextRequest) {
       namaSales: z.string(),
       nomorNota: z.string(),
       tanggalNota: z.string(),
+      kotaClient: z.string(),
       dataPenjualan: z.array(
         z.object({
           id: z.number(),
@@ -35,7 +36,10 @@ export async function POST(request: NextRequest) {
       // Get ID client
       const client = await tx.client.findUnique({
         where: {
-          nama_client: validatedData.namaLangganan,
+          nama_client_kota_client: {
+            nama_client: validatedData.namaLangganan,
+            kota_client: validatedData.kotaClient,
+          },
         },
       });
 

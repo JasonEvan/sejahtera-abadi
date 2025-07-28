@@ -20,6 +20,7 @@ interface BeliStore {
   namaClient: string;
   nomorNota: string;
   tanggalNota: string;
+  kotaClient: string;
   clientInformationDone: boolean;
 
   incrementalId: number;
@@ -37,7 +38,8 @@ interface BeliStore {
   setClientInformation: (
     namaClient: string,
     nomorNota: string,
-    tanggalNota: string
+    tanggalNota: string,
+    kotaClient: string
   ) => void;
   setClientInformationDone: () => void;
   incrementId: () => void;
@@ -57,6 +59,7 @@ export const useBeliStore = create<BeliStore>()(
       namaClient: "",
       nomorNota: "",
       tanggalNota: "",
+      kotaClient: "",
       clientInformationDone: false,
 
       incrementalId: 0,
@@ -71,11 +74,17 @@ export const useBeliStore = create<BeliStore>()(
 
       isSubmitting: false,
 
-      setClientInformation: (namaClient, nomorNota, tanggalNota) => {
+      setClientInformation: (
+        namaClient,
+        nomorNota,
+        tanggalNota,
+        kotaClient
+      ) => {
         set({
           namaClient,
           nomorNota,
           tanggalNota,
+          kotaClient,
         });
       },
 
@@ -160,6 +169,7 @@ export const useBeliStore = create<BeliStore>()(
               namaClient: get().namaClient,
               nomorNota: get().nomorNota,
               tanggalNota: get().tanggalNota,
+              kotaClient: get().kotaClient,
               dataPembelian: get().dataPembelian,
               totalPembelian: get().totalPembelian,
               diskon: get().diskon,
@@ -203,6 +213,7 @@ export const useBeliStore = create<BeliStore>()(
           namaClient: "",
           nomorNota: "",
           tanggalNota: "",
+          kotaClient: "",
           clientInformationDone: false,
           incrementalId: 0,
           dataPembelian: [],

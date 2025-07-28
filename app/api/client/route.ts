@@ -11,7 +11,9 @@ export async function GET(request: NextRequest) {
   try {
     const prisma = PrismaService.getInstance();
     const clients = await prisma.client.findMany(
-      onlyClientsName ? { select: { nama_client: true } } : undefined
+      onlyClientsName
+        ? { select: { nama_client: true, kota_client: true } }
+        : undefined
     );
 
     return NextResponse.json(
@@ -49,7 +51,7 @@ export async function POST(request: NextRequest) {
     await prisma.client.create({
       data: {
         nama_client: validatedData.nama,
-        kota_client: validatedData.kota ? validatedData.kota : null,
+        kota_client: validatedData.kota ? validatedData.kota : "",
         alamat_client: validatedData.alamat ? validatedData.alamat : null,
         telp_client: validatedData.telepon ? validatedData.telepon : null,
         hp_client: validatedData.handphone ? validatedData.handphone : null,

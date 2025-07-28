@@ -24,6 +24,7 @@ interface JualStore {
   namaSales: string;
   nomorNota: string;
   tanggalNota: string;
+  kotaClient: string;
   clientInformationDone: boolean;
 
   incrementalId: number;
@@ -42,7 +43,8 @@ interface JualStore {
     namaLangganan: string,
     namaSales: string,
     nomorNota: string,
-    tanggalNota: string
+    tanggalNota: string,
+    kotaClient: string
   ) => void;
   setClientInformationDone: () => void;
   incrementId: () => void;
@@ -63,6 +65,7 @@ export const useJualStore = create<JualStore>()(
       namaSales: "",
       nomorNota: "",
       tanggalNota: "",
+      kotaClient: "",
       clientInformationDone: false,
 
       incrementalId: 0,
@@ -81,9 +84,10 @@ export const useJualStore = create<JualStore>()(
         namaLangganan,
         namaSales,
         nomorNota,
-        tanggalNota
+        tanggalNota,
+        kotaClient
       ) => {
-        set({ namaLangganan, namaSales, nomorNota, tanggalNota });
+        set({ namaLangganan, namaSales, nomorNota, tanggalNota, kotaClient });
       },
       setClientInformationDone: () => set({ clientInformationDone: true }),
       incrementId: () => {
@@ -157,6 +161,7 @@ export const useJualStore = create<JualStore>()(
               namaSales: get().namaSales,
               nomorNota: get().nomorNota,
               tanggalNota: get().tanggalNota,
+              kotaClient: get().kotaClient,
               dataPenjualan: get().dataPenjualan,
               totalPenjualan: get().totalPenjualan,
               diskon: get().diskon,
@@ -200,6 +205,7 @@ export const useJualStore = create<JualStore>()(
           namaSales: "",
           nomorNota: "",
           tanggalNota: "",
+          kotaClient: "",
           clientInformationDone: false,
           incrementalId: 0,
           dataPenjualan: [],

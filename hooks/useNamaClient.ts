@@ -19,7 +19,13 @@ export const useNamaClient = () => {
 
         const clients: { data: client[] } = await res.json();
 
-        setNamaClient(clients.data.map((client) => client.nama_client));
+        setNamaClient(
+          clients.data.map((client) =>
+            client.kota_client
+              ? `${client.nama_client}/${client.kota_client}`
+              : client.nama_client
+          )
+        );
       } catch (error) {
         Swal.fire({
           icon: "error",

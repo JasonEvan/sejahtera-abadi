@@ -22,6 +22,7 @@ export default function ClientInformation() {
     namaClient: namaClientStore,
     nomorNota: nomorNotaStore,
     tanggalNota: tanggalNotaStore,
+    kotaClient: kotaClientStore,
     clientInformationDone,
   } = useBeliStore();
 
@@ -33,13 +34,21 @@ export default function ClientInformation() {
 
   const formik = useFormik({
     initialValues: {
-      namaclient: namaClientStore || "",
+      namaclient:
+        (kotaClientStore
+          ? `${namaClientStore}/${kotaClientStore}`
+          : namaClientStore) || "",
       nomornota: nomorNotaStore || "",
       tanggal: tanggalNotaStore || "",
     },
     validationSchema,
     onSubmit: (values) => {
-      setClientInformation(values.namaclient, values.nomornota, values.tanggal);
+      setClientInformation(
+        values.namaclient.split("/")[0],
+        values.nomornota,
+        values.tanggal,
+        values.namaclient.split("/")[1] ? values.namaclient.split("/")[1] : ""
+      );
       setClientInformationDone();
       fetchMenuBarang();
     },

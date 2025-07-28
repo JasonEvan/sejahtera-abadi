@@ -75,8 +75,8 @@ model bretur {
 
 model client {
   id               Int     @id @default(autoincrement())
-  nama_client      String  @unique @db.VarChar(50)
-  kota_client      String? @db.VarChar(50)
+  nama_client      String  @db.VarChar(50)
+  kota_client      String  @default("") @db.VarChar(50)
   telp_client      String? @db.VarChar(20)
   alamat_client    String? @db.VarChar(50)
   sldawal_utang    Int     @default(0)
@@ -94,6 +94,8 @@ model client {
   jual   jual[]
   jlunas jlunas[]
   jretur jretur[]
+
+  @@unique([nama_client, kota_client])
 }
 
 model jlunas {

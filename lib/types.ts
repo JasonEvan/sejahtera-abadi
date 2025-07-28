@@ -16,6 +16,7 @@ export interface JualDTO {
   namaSales: string;
   nomorNota: string;
   tanggalNota: string;
+  kotaClient: string;
   dataPenjualan: DataPenjualanI[];
   totalPenjualan: number;
   diskon: number;
@@ -26,6 +27,7 @@ export interface BeliDTO {
   namaClient: string;
   nomorNota: string;
   tanggalNota: string;
+  kotaClient: string;
   dataPembelian: DataPembelianI[];
   totalPembelian: number;
   diskon: number;
