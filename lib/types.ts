@@ -1,5 +1,6 @@
 import { DataPembelianI } from "@/hooks/useBeliStore";
 import { DataPenjualanI } from "@/hooks/useJualStore";
+import { DataPelunasanI } from "@/hooks/useLunasStore";
 
 export interface TambahBarangFormValues {
   nama: string;
@@ -32,4 +33,12 @@ export interface BeliDTO {
   totalPembelian: number;
   diskon: number;
   totalAkhir: number;
+}
+
+export interface PelunasanDTO {
+  namaClient: string;
+  kotaClient: string;
+  nomorTransaksi: string;
+  tanggal: string;
+  dataPelunasan: DataPelunasanI[];
 }
