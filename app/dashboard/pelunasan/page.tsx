@@ -1,11 +1,12 @@
+import PiutangPage from "@/components/pelunasan/PiutangPage";
 import UtangPage from "@/components/pelunasan/UtangPage";
 import CustomTabs from "@/components/Tabs";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 
 export default function PelunasanPage() {
   const tabData = [
     { label: "Utang", content: <UtangPage /> },
-    { label: "Piutang", content: <Typography>Piutang Content</Typography> },
+    { label: "Piutang", content: <PiutangPage /> },
   ];
 
   return (
