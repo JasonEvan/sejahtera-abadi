@@ -12,12 +12,14 @@ import { DataPelunasanI, MenuNota } from "@/hooks/useLunasStore";
 import { useEffect, useState } from "react";
 
 export default function NoteForm({
+  dataPelunasan,
   menuNota,
   menuNotaLoading,
   incrementalId,
   setDataPelunasan,
   incrementId,
 }: {
+  dataPelunasan: DataPelunasanI[];
   menuNota: MenuNota[];
   menuNotaLoading: boolean;
   incrementalId: number;
@@ -28,6 +30,10 @@ export default function NoteForm({
 
   const validateLunasNota = (value: number, saldoNota: number) => {
     return value > 0 && value <= saldoNota;
+  };
+
+  const isNotaExists = (nomorNota: string) => {
+    return dataPelunasan.some((item) => item.nomorNota === nomorNota);
   };
 
   const validationSchema = Yup.object({
@@ -44,6 +50,15 @@ export default function NoteForm({
     },
     validationSchema,
     onSubmit: (values) => {
+      // Validate nomor nota if exist in data pelunasan
+      if (isNotaExists(values.nomornota)) {
+        formik.setFieldError(
+          "nomornota",
+          "Nomor nota already exists in data pelunasan"
+        );
+        return;
+      }
+
       // Validate lunas nota
       if (!validateLunasNota(values.lunasnota, values.saldonota)) {
         formik.setFieldError(
@@ -61,11 +76,6 @@ export default function NoteForm({
         lunasNota: values.lunasnota,
       });
       incrementId();
-
-      // Remove nomor nota from options
-      setNotaOptions((prev) =>
-        prev.filter((nota) => nota !== values.nomornota)
-      );
 
       // Reset form
       formik.resetForm();

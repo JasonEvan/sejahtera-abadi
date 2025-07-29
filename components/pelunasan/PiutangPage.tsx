@@ -67,6 +67,7 @@ export default function PiutangPage() {
         sx={{ marginTop: 2, display: clientInformationDone ? "block" : "none" }}
       >
         <NoteForm
+          dataPelunasan={dataPelunasan}
           menuNota={menuNota}
           menuNotaLoading={isLoading}
           incrementId={incrementId}
