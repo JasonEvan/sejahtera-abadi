@@ -1,6 +1,7 @@
 import { DataPembelianI } from "@/hooks/useBeliStore";
 import { DataPenjualanI } from "@/hooks/useJualStore";
 import { DataPelunasanI } from "@/hooks/useLunasStore";
+import { NotaI } from "@/hooks/useReturStore";
 
 export interface TambahBarangFormValues {
   nama: string;
@@ -41,4 +42,15 @@ export interface PelunasanDTO {
   nomorTransaksi: string;
   tanggal: string;
   dataPelunasan: DataPelunasanI[];
+}
+
+export interface ReturDTO {
+  namaClient: string;
+  kotaClient: string;
+  nomorNota: string;
+  tanggal: string;
+  dataNota: NotaI[];
+  diskon: number;
+  totalAkhir: number;
+  nilaiRetur: number;
 }

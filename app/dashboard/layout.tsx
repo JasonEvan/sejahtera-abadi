@@ -1,4 +1,5 @@
 import CustomAppBar from "@/components/AppBar";
+import ModalProvider from "@/components/ModalProvider";
 import Sidebar from "@/components/Sidebar";
 import { Box } from "@mui/material";
 
@@ -26,6 +27,7 @@ export default function DashboardLayout({
       >
         {children}
       </Box>
+      <ModalProvider />
     </Box>
   );
 }
