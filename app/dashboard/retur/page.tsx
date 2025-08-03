@@ -1,6 +1,7 @@
 import ReturBeliPage from "@/components/retur/ReturBeliPage";
+import ReturJualPage from "@/components/retur/ReturJualPage";
 import CustomTabs from "@/components/Tabs";
-import { Box, Typography } from "@mui/material";
+import { Box } from "@mui/material";
 
 export default function ReturPage() {
   const tabData = [
@@ -8,7 +9,7 @@ export default function ReturPage() {
       label: "Beli",
       content: <ReturBeliPage />,
     },
-    { label: "Jual", content: <Typography>Retur Jual Content</Typography> },
+    { label: "Jual", content: <ReturJualPage /> },
   ];
 
   return (

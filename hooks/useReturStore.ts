@@ -234,3 +234,186 @@ export const useReturBeliStore = create<ReturStore>((set, get) => ({
     });
   },
 }));
+
+export const useReturJualStore = create<ReturStore>((set, get) => ({
+  namaClient: "",
+  kotaClient: "",
+  nomorNota: "",
+  tanggal: "",
+  clientInformationDone: false,
+  menuNotaLoading: false,
+  menuNota: [],
+  isLoading: false,
+  dataNota: [],
+  diskon: 0,
+  totalAkhir: 0,
+  nilaiRetur: 0,
+  isSubmitting: false,
+
+  setClientInformation: (namaClient, kotaClient, nomorNota, tanggal) => {
+    set({
+      namaClient,
+      kotaClient,
+      nomorNota,
+      tanggal,
+    });
+  },
+
+  setClientInformationDone: () => set({ clientInformationDone: true }),
+
+  fetchMenuNota: async (namaClient, kotaClient) => {
+    try {
+      set({ menuNotaLoading: true });
+
+      const response = await fetch(
+        `/api/nota/penjualan?formenu=true&notpaid=true&nama=${namaClient}&kota=${kotaClient}`,
+        { cache: "no-store" }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch menu nota");
+      }
+
+      const { data }: { data: { nomor_nota: string }[] } =
+        await response.json();
+      set({ menuNota: data.map((item) => item.nomor_nota) });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error instanceof Error ? error.message : "Unknown error",
+        confirmButtonText: "OK",
+      });
+    } finally {
+      set({ menuNotaLoading: false });
+    }
+  },
+
+  fetchDataNota: async () => {
+    try {
+      set({ isLoading: true });
+      const response = await fetch(`/api/jual?nota=${get().nomorNota}`, {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch data nota");
+      }
+
+      const { data }: { data: NotaI[] } = await response.json();
+
+      set({
+        dataNota: data.map((d) => ({ ...d, retur_barang: 0 })),
+        diskon: data[0].diskon_nota || 0,
+      });
+
+      const nilaiNota = data.reduce((acc, curr) => acc + curr.total_harga, 0);
+
+      set({
+        totalAkhir: nilaiNota - (nilaiNota * (data[0].diskon_nota || 0)) / 100,
+      });
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error instanceof Error ? error.message : "Unknown error",
+        confirmButtonText: "OK",
+      });
+      set({ dataNota: [], totalAkhir: 0, diskon: 0 });
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
+  returBarang: (data, jumlahReturBaru, jumlahReturSebelum) => {
+    set((state) => {
+      const nilaiReturSebelum = data.harga_barang * jumlahReturSebelum;
+      const nilaiReturSebelumSetelahDiskon =
+        nilaiReturSebelum - (nilaiReturSebelum * (data.diskon_nota || 0)) / 100;
+
+      const nilaiReturBaru = data.harga_barang * jumlahReturBaru;
+      const nilaiReturBaruSetelahDiskon =
+        nilaiReturBaru - (nilaiReturBaru * (data.diskon_nota || 0)) / 100;
+
+      const selisihNilai =
+        nilaiReturBaruSetelahDiskon - nilaiReturSebelumSetelahDiskon;
+
+      return {
+        dataNota: state.dataNota.map((item) =>
+          item.id === data.id
+            ? {
+                ...item,
+                qty_barang:
+                  item.qty_barang + jumlahReturSebelum - jumlahReturBaru,
+                retur_barang: jumlahReturBaru,
+              }
+            : item
+        ),
+        totalAkhir: state.totalAkhir - selisihNilai,
+        nilaiRetur: state.nilaiRetur + selisihNilai,
+      };
+    });
+  },
+
+  submitRetur: async () => {
+    try {
+      set({ isSubmitting: true });
+
+      const response = await fetch("/api/jual/retur", {
+        cache: "no-store",
+        method: "POST",
+        body: JSON.stringify({
+          namaClient: get().namaClient,
+          kotaClient: get().kotaClient,
+          nomorNota: get().nomorNota,
+          tanggal: get().tanggal,
+          dataNota: get().dataNota,
+          diskon: get().diskon,
+          totalAkhir: get().totalAkhir,
+          nilaiRetur: get().nilaiRetur,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit retur");
+      }
+
+      const { message }: { message: string } = await response.json();
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: message,
+        confirmButtonText: "OK",
+      });
+
+      get().resetAll();
+    } catch (error) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error instanceof Error ? error.message : "Unknown error",
+        confirmButtonText: "OK",
+      });
+    } finally {
+      set({ isSubmitting: false });
+    }
+  },
+
+  resetAll: () => {
+    set({
+      namaClient: "",
+      kotaClient: "",
+      nomorNota: "",
+      tanggal: "",
+      clientInformationDone: false,
+      menuNotaLoading: false,
+      menuNota: [],
+      isLoading: false,
+      dataNota: [],
+      diskon: 0,
+      totalAkhir: 0,
+      nilaiRetur: 0,
+      isSubmitting: false,
+    });
+  },
+}));

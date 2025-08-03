@@ -4,6 +4,37 @@ import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
 
+export async function GET(request: NextRequest) {
+  const nota = request.nextUrl.searchParams.get("nota") || undefined;
+
+  try {
+    const prisma = PrismaService.getInstance();
+    const data = await prisma.jual.findMany({
+      where: {
+        nomor_nota: nota,
+      },
+      select: {
+        id: true,
+        nama_barang: true,
+        harga_barang: true,
+        qty_barang: true,
+        total_harga: true,
+        diskon_nota: true,
+      },
+    });
+
+    return NextResponse.json(
+      { data },
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "An error occurred" },
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const data: JualDTO = await request.json();
