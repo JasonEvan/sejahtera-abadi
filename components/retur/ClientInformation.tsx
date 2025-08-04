@@ -63,7 +63,7 @@ export default function ClientInformation({
   });
 
   useEffect(() => {
-    if (namaClient && namaClient.length > 0) {
+    if (formik.values.namaclient && formik.values.namaclient.length > 0) {
       fetchMenuNota(
         formik.values.namaclient.split("/")[0],
         formik.values.namaclient.split("/")[1] || ""
