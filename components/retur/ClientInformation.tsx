@@ -82,7 +82,7 @@ export default function ClientInformation({
     <Box sx={{ marginBottom: 2 }}>
       <form className="w-full" onSubmit={formik.handleSubmit}>
         <Grid container spacing={4} marginBottom={4}>
-          <Grid size={4}>
+          <Grid size={{ xs: 12, sm: 12, md: 4, lg: 4 }}>
             <Autocomplete
               disabled={clientInformationDone}
               disablePortal
@@ -110,7 +110,7 @@ export default function ClientInformation({
               )}
             />
           </Grid>
-          <Grid size={4}>
+          <Grid size={{ xs: 12, sm: 12, md: 4, lg: 4 }}>
             <Autocomplete
               disabled={clientInformationDone}
               disablePortal
@@ -137,7 +137,7 @@ export default function ClientInformation({
               )}
             />
           </Grid>
-          <Grid size={4}>
+          <Grid size={{ xs: 12, sm: 12, md: 4, lg: 4 }}>
             <TextField
               disabled={clientInformationDone}
               label="Tanggal"
