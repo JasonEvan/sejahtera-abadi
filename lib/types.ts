@@ -1,3 +1,4 @@
+import { EditNotaTransaksiI } from "@/hooks/edit/useEditTransaksiStore";
 import { DataPembelianI } from "@/hooks/useBeliStore";
 import { DataPenjualanI } from "@/hooks/useJualStore";
 import { DataPelunasanI } from "@/hooks/useLunasStore";
@@ -53,4 +54,14 @@ export interface ReturDTO {
   diskon: number;
   totalAkhir: number;
   nilaiRetur: number;
+}
+
+export interface EditDTO {
+  namaClient: string;
+  kotaClient: string;
+  nomorNota: string;
+  dataNota: EditNotaTransaksiI[];
+  nilaiNota: number;
+  diskonNota: number;
+  totalAkhir: number;
 }
