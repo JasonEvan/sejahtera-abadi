@@ -1,11 +1,11 @@
 "use client";
 
-import AddTransaksiForm from "@/components/edit/transaksi/AddTransaksiForm";
+import AddTransaksiJualForm from "@/components/edit/transaksi/AddTransaksiJualForm";
 import ClientInformation from "@/components/edit/transaksi/ClientInformation";
 import JualHistoryContainer from "@/components/edit/transaksi/JualHistoryContainer";
 import NoteSummary from "@/components/edit/transaksi/NoteSummary";
 import NoteTable from "@/components/edit/transaksi/NoteTable";
-import { useEditJualStore } from "@/hooks/edit/useEditTransaksiStore";
+import { useEditJualStore } from "@/hooks/edit/useEditJualStore";
 import { modals } from "@/lib/modal";
 import { Box, Button, Divider, Stack, Typography } from "@mui/material";
 
@@ -39,7 +39,7 @@ export default function PenjualanPage() {
       type: "form",
       size: "sm",
       children: (
-        <AddTransaksiForm
+        <AddTransaksiJualForm
           addDataNota={addDataNota}
           decrementalId={decrementalId}
           menuBarang={menuBarang}
@@ -84,7 +84,11 @@ export default function PenjualanPage() {
             Check Harga
           </Button>
         </Stack>
-        <NoteTable dataNota={dataNota} deleteDataNota={deleteDataNota} />
+        <NoteTable
+          dataNota={dataNota}
+          deleteDataNota={deleteDataNota}
+          type="jual"
+        />
         <NoteSummary
           diskon={diskonNota}
           totalAkhir={totalAkhir}

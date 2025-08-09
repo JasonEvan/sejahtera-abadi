@@ -1,4 +1,4 @@
-import { useEditJualStore } from "@/hooks/edit/useEditTransaksiStore";
+import { useEditJualStore } from "@/hooks/edit/useEditJualStore";
 import ListHistory from "./ListHistory";
 
 /**

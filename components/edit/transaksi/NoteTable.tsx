@@ -13,8 +13,9 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useState } from "react";
 import { modals } from "@/lib/modal";
-import { EditNotaTransaksiI } from "@/hooks/edit/useEditTransaksiStore";
 import EditJualTransaksiForm from "./EditJualTransaksiForm";
+import EditBeliTransaksiForm from "./EditBeliTransaksiForm";
+import { EditNotaTransaksiI } from "@/lib/types";
 
 interface Column {
   id: "nama_barang" | "harga_barang" | "qty_barang" | "total_harga" | "action";
@@ -56,9 +57,11 @@ const columns: readonly Column[] = [
 
 export default function NoteTable({
   dataNota,
+  type,
   deleteDataNota,
 }: {
   dataNota: EditNotaTransaksiI[];
+  type: "jual" | "beli";
   deleteDataNota: (id: number) => void;
 }) {
   const [page, setPage] = useState(0);
@@ -80,7 +83,12 @@ export default function NoteTable({
       title: "Edit Penjualan",
       type: "form",
       size: "sm",
-      children: <EditJualTransaksiForm row={row} />,
+      children:
+        type === "jual" ? (
+          <EditJualTransaksiForm row={row} />
+        ) : (
+          <EditBeliTransaksiForm row={row} />
+        ),
     });
   };
 

@@ -8,27 +8,16 @@ import {
   TextField,
 } from "@mui/material";
 import { modals } from "@/lib/modal";
-import { MenuBarangJual } from "@/hooks/useJualStore";
 import { useMemo } from "react";
-import { EditNotaTransaksiI } from "@/hooks/edit/useEditTransaksiStore";
+import { useEditBeliStore } from "@/hooks/edit/useEditBeliStore";
+import { EditNotaTransaksiI } from "@/lib/types";
 
-export default function AddTransaksiForm({
-  menuBarang,
-  dataNota,
-  menuBarangLoading,
-  decrementalId,
-  addDataNota,
+export default function EditBeliTransaksiForm({
+  row,
 }: {
-  menuBarang: MenuBarangJual[];
-  dataNota: EditNotaTransaksiI[];
-  menuBarangLoading: boolean;
-  decrementalId: number;
-  addDataNota: (data: EditNotaTransaksiI) => void;
+  row: EditNotaTransaksiI;
 }) {
-  const isPersediaanEnough = (namaBarang: string, jumlah: number) => {
-    const barang = menuBarang.find((item) => item.nama_barang === namaBarang);
-    return barang ? jumlah <= barang.stock_akhir : false;
-  };
+  const { menuBarang, menuBarangLoading, updateDataNota } = useEditBeliStore();
 
   const validationSchema = Yup.object({
     namabarang: Yup.string()
@@ -44,25 +33,19 @@ export default function AddTransaksiForm({
 
   const formik = useFormik({
     initialValues: {
-      namabarang: "",
-      jumlah: 0,
-      harga: 0,
+      namabarang: row.nama_barang,
+      jumlah: row.qty_barang,
+      harga: row.harga_barang,
     },
     validationSchema,
-    onSubmit: async (values) => {
-      if (!isPersediaanEnough(values.namabarang, values.jumlah)) {
-        formik.setFieldError("jumlah", "Persediaan tidak cukup");
-        return;
-      }
-
-      addDataNota({
-        id: decrementalId,
+    onSubmit: (values) => {
+      updateDataNota({
+        ...row,
         nama_barang: values.namabarang,
         qty_barang: values.jumlah,
         harga_barang: values.harga,
-        total_harga: values.jumlah * values.harga,
-        diskon_nota: dataNota[0].diskon_nota,
       });
+
       modals.close();
     },
   });
@@ -131,7 +114,7 @@ export default function AddTransaksiForm({
       />
       <DialogActions>
         <Button onClick={() => modals.close()}>Cancel</Button>
-        <Button type="submit">Add</Button>
+        <Button type="submit">Update</Button>
       </DialogActions>
     </form>
   );

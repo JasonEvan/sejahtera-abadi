@@ -7,39 +7,24 @@ import {
   InputAdornment,
   TextField,
 } from "@mui/material";
-import { useEditJualStore } from "@/hooks/edit/useEditJualStore";
 import { modals } from "@/lib/modal";
 import { useMemo } from "react";
+import { MenuBarangBeli } from "@/hooks/useBeliStore";
 import { EditNotaTransaksiI } from "@/lib/types";
 
-export default function EditJualTransaksiForm({
-  row,
+export default function AddTransaksiBeliForm({
+  menuBarang,
+  dataNota,
+  menuBarangLoading,
+  decrementalId,
+  addDataNota,
 }: {
-  row: EditNotaTransaksiI;
+  menuBarang: MenuBarangBeli[];
+  dataNota: EditNotaTransaksiI[];
+  menuBarangLoading: boolean;
+  decrementalId: number;
+  addDataNota: (data: EditNotaTransaksiI) => void;
 }) {
-  const { menuBarang, menuBarangLoading, updateDataNota } = useEditJualStore();
-
-  const isPersediaanEnough = (
-    newNamaBarang: string,
-    newQty: number
-  ): boolean => {
-    const barang = menuBarang.find(
-      (item) => item.nama_barang === newNamaBarang
-    );
-    if (!barang) return false;
-
-    if (row.nama_barang !== newNamaBarang) {
-      // Jika nama barang berubah, cek stok total untuk barang baru
-      return newQty <= barang.stock_akhir;
-    } else {
-      // Jika nama barang sama, hitung selisihnya
-      const selisih = newQty - row.qty_barang;
-      // Jika selisih > 0, berarti kita butuh stok tambahan
-      // Jika selisih <= 0, berarti stok dikembalikan (pasti cukup)
-      return selisih <= barang.stock_akhir;
-    }
-  };
-
   const validationSchema = Yup.object({
     namabarang: Yup.string()
       .required("Nama barang harus diisi")
@@ -54,24 +39,20 @@ export default function EditJualTransaksiForm({
 
   const formik = useFormik({
     initialValues: {
-      namabarang: row.nama_barang,
-      jumlah: row.qty_barang,
-      harga: row.harga_barang,
+      namabarang: "",
+      jumlah: 0,
+      harga: 0,
     },
     validationSchema,
     onSubmit: (values) => {
-      if (!isPersediaanEnough(values.namabarang, values.jumlah)) {
-        formik.setFieldError("jumlah", "Persediaan tidak cukup");
-        return;
-      }
-
-      updateDataNota({
-        ...row,
+      addDataNota({
+        id: decrementalId,
         nama_barang: values.namabarang,
         qty_barang: values.jumlah,
         harga_barang: values.harga,
+        total_harga: values.jumlah * values.harga,
+        diskon_nota: dataNota[0].diskon_nota,
       });
-
       modals.close();
     },
   });
@@ -140,7 +121,7 @@ export default function EditJualTransaksiForm({
       />
       <DialogActions>
         <Button onClick={() => modals.close()}>Cancel</Button>
-        <Button type="submit">Update</Button>
+        <Button type="submit">Add</Button>
       </DialogActions>
     </form>
   );

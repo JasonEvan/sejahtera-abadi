@@ -2,17 +2,9 @@ import Swal from "sweetalert2";
 import { create } from "zustand";
 import { MenuBarangJual } from "../useJualStore";
 import { formatDate } from "@/lib/formatter";
+import { EditNotaTransaksiI } from "@/lib/types";
 
-export interface EditNotaTransaksiI {
-  id: number;
-  nama_barang: string;
-  harga_barang: number;
-  qty_barang: number;
-  total_harga: number;
-  diskon_nota: number;
-}
-
-interface EditTransaksiStore {
+interface EditJualStore {
   namaClient: string;
   kotaClient: string;
   nomorNota: string;
@@ -67,7 +59,7 @@ interface EditTransaksiStore {
   resetAll: () => void;
 }
 
-export const useEditJualStore = create<EditTransaksiStore>((set, get) => ({
+export const useEditJualStore = create<EditJualStore>((set, get) => ({
   namaClient: "",
   kotaClient: "",
   nomorNota: "",

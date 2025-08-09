@@ -1,4 +1,3 @@
-import { EditNotaTransaksiI } from "@/hooks/edit/useEditTransaksiStore";
 import { DataPembelianI } from "@/hooks/useBeliStore";
 import { DataPenjualanI } from "@/hooks/useJualStore";
 import { DataPelunasanI } from "@/hooks/useLunasStore";
@@ -64,4 +63,13 @@ export interface EditDTO {
   nilaiNota: number;
   diskonNota: number;
   totalAkhir: number;
+}
+
+export interface EditNotaTransaksiI {
+  id: number;
+  nama_barang: string;
+  harga_barang: number;
+  qty_barang: number;
+  total_harga: number;
+  diskon_nota: number;
 }
