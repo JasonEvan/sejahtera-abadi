@@ -83,7 +83,7 @@ export default function NoteForm({
   });
 
   useEffect(() => {
-    if (menuNota && menuNota.length > 0) {
+    if (menuNota) {
       const options = menuNota.map((nota) => nota.nomor_nota);
       setNotaOptions(options);
     }
