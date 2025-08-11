@@ -4,6 +4,34 @@ import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
 
+export async function GET(request: NextRequest) {
+  const forMenu = request.nextUrl.searchParams.get("formenu") === "true";
+
+  let select: Record<string, boolean> | undefined = undefined;
+  if (forMenu) {
+    select = {
+      nomor_nota: true,
+    };
+  }
+
+  try {
+    const prisma = PrismaService.getInstance();
+    const data = await prisma.blunas.findMany({
+      select,
+    });
+
+    return NextResponse.json({ data });
+  } catch (error) {
+    console.error("Error fetching pelunasan data:", error);
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body: PelunasanDTO = await request.json();

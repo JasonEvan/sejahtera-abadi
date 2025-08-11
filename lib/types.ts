@@ -73,3 +73,31 @@ export interface EditNotaTransaksiI {
   total_harga: number;
   diskon_nota: number;
 }
+
+export interface PelunasanDTO {
+  id: number;
+  nomor_transaksi: string;
+  tanggal_lunas: string;
+  id_client: number;
+  nomor_nota: string;
+  lunas_nota: number;
+  nota: {
+    nilai_nota: number;
+  };
+}
+
+export interface UpdatePelunasanDTO {
+  dataPelunasan: {
+    id: number;
+    nomor_transaksi: string;
+    tanggal_lunas: string;
+    nomor_nota: string;
+    lunas_nota: number;
+    saldo_nota: number;
+    id_client: number;
+  }[];
+  nilai_nota: number;
+  lunas_nota: number;
+  saldo_nota: number;
+  lunas_lama: number;
+}
