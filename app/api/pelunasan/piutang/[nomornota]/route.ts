@@ -12,7 +12,7 @@ export async function GET(
     const nomorNota = (await params).nomornota;
 
     const prisma = PrismaService.getInstance();
-    const data = await prisma.blunas.findMany({
+    const data = await prisma.jlunas.findMany({
       where: {
         nomor_nota: nomorNota,
       },
@@ -77,7 +77,7 @@ export async function PUT(
     const prisma = PrismaService.getInstance();
     await prisma.$transaction(async (tx) => {
       // Get the current nota value in database in order to calculate the new saldo
-      const nota = await tx.bnota.findUniqueOrThrow({
+      const nota = await tx.jnota.findUniqueOrThrow({
         where: { nomor_nota: nomorNota },
         select: { nilai_nota: true, id_client: true },
       });
@@ -85,7 +85,7 @@ export async function PUT(
       const saldoBaru = nota.nilai_nota - totalLunasBaru;
 
       // Delete existing pelunasan records
-      await tx.blunas.deleteMany({
+      await tx.jlunas.deleteMany({
         where: { nomor_nota: nomorNota },
       });
 
@@ -102,12 +102,12 @@ export async function PUT(
         };
       });
 
-      await tx.blunas.createMany({
+      await tx.jlunas.createMany({
         data: mappedData,
       });
 
-      // Update bnota
-      await tx.bnota.update({
+      // Update jnota
+      await tx.jnota.update({
         where: { nomor_nota: nomorNota },
         data: {
           lunas_nota: totalLunasBaru,
@@ -121,7 +121,7 @@ export async function PUT(
           id: nota.id_client,
         },
         data: {
-          sldakhir_utang: {
+          sldakhir_piutang: {
             decrement: totalLunasBaru - validatedData.lunas_lama,
           },
         },
@@ -152,7 +152,7 @@ export async function DELETE(
     const prisma = PrismaService.getInstance();
     await prisma.$transaction(async (tx) => {
       // Find pelunasan records by nomor_nota
-      const paymentsToDelete = await tx.blunas.findMany({
+      const paymentsToDelete = await tx.jlunas.findMany({
         where: { nomor_nota: nomorNota },
         select: { lunas_nota: true },
       });
@@ -167,12 +167,12 @@ export async function DELETE(
       );
 
       // Delete pelunasan records
-      await tx.blunas.deleteMany({
+      await tx.jlunas.deleteMany({
         where: { nomor_nota: nomorNota },
       });
 
-      // Update bnota
-      const updatedNota = await tx.bnota.update({
+      // Update jnota
+      const updatedNota = await tx.jnota.update({
         where: { nomor_nota: nomorNota },
         data: {
           lunas_nota: {
@@ -193,7 +193,7 @@ export async function DELETE(
           id: updatedNota.id_client,
         },
         data: {
-          sldakhir_utang: {
+          sldakhir_piutang: {
             increment: totalDeletedAmount,
           },
         },
