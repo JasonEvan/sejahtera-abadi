@@ -4,6 +4,38 @@ import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
 
+export async function GET(request: NextRequest) {
+  const forMenu = request.nextUrl.searchParams.get("formenu") === "true";
+
+  let select: Record<string, boolean> | undefined = undefined;
+  if (forMenu) {
+    select = {
+      nomor_nota: true,
+    };
+  }
+
+  try {
+    const prisma = PrismaService.getInstance();
+    const data = await prisma.jretur.findMany({
+      where: {
+        nota: {
+          lunas_nota: forMenu ? 0 : undefined,
+        },
+      },
+      select,
+      distinct: forMenu ? ["nomor_nota"] : undefined,
+    });
+
+    return NextResponse.json({ data });
+  } catch (error) {
+    console.error("Error fetching retur data:", error);
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Unknown error" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body: ReturDTO = await request.json();
