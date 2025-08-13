@@ -11,7 +11,7 @@ export async function GET(
   try {
     const nomorNota = (await params).nomornota;
     const prisma = PrismaService.getInstance();
-    const data = await prisma.jual.findMany({
+    const data = await prisma.beli.findMany({
       where: {
         nomor_nota: nomorNota,
       },
@@ -22,7 +22,7 @@ export async function GET(
         qty_barang: true,
         total_harga: true,
         diskon_nota: true,
-        jretur: {
+        bretur: {
           select: {
             qty_barang: true,
           },
@@ -32,7 +32,7 @@ export async function GET(
 
     return NextResponse.json({
       data: data.map((item) => {
-        const totalRetur = item.jretur.reduce(
+        const totalRetur = item.bretur.reduce(
           (acc, curr) => acc + curr.qty_barang,
           0
         );
@@ -83,16 +83,15 @@ export async function PUT(
 
     const prisma = PrismaService.getInstance();
     await prisma.$transaction(async (tx) => {
-      // Get Old Jual Data
-      const oldJual = await tx.jual.findFirstOrThrow({
+      // Get Old Beli Data
+      const oldBeli = await tx.beli.findFirstOrThrow({
         where: {
           nomor_nota: nomorNota,
         },
         select: {
           tanggal_nota: true,
-          nama_sales: true,
           id_client: true,
-          jretur: {
+          bretur: {
             select: {
               tanggal_retur: true,
             },
@@ -100,7 +99,7 @@ export async function PUT(
         },
       });
 
-      const oldJnota = await tx.jnota.findUniqueOrThrow({
+      const oldBnota = await tx.bnota.findUniqueOrThrow({
         where: {
           nomor_nota: nomorNota,
         },
@@ -109,22 +108,22 @@ export async function PUT(
         },
       });
 
-      const returAsli = await tx.jretur.findFirst({
+      const returAsli = await tx.bretur.findFirst({
         where: { nomor_nota: nomorNota },
         select: { tanggal_retur: true },
       });
 
       // Delete existing retur entries for the given nomorNota
-      await tx.jretur.deleteMany({
+      await tx.bretur.deleteMany({
         where: {
           nomor_nota: nomorNota,
         },
       });
 
-      // Update jual with the new data
+      // Update beli with the new data
       await Promise.all(
         validatedData.dataRetur.map((item) =>
-          tx.jual.update({
+          tx.beli.update({
             where: { id: item.id },
             data: {
               qty_barang: item.qty_barang,
@@ -134,27 +133,26 @@ export async function PUT(
         )
       );
 
-      // Insert jretur again with the new retur data
+      // Insert bretur again with the new retur data
       const retur = validatedData.dataRetur
         .filter((item) => item.retur_barang > 0)
         .map((item) => ({
-          id_client: oldJual.id_client,
-          id_jual: item.id,
+          id_client: oldBeli.id_client,
+          id_beli: item.id,
           nomor_nota: nomorNota,
-          tanggal_nota: oldJual.tanggal_nota,
+          tanggal_nota: oldBeli.tanggal_nota,
           nama_barang: item.nama_barang,
           harga_barang: item.harga_barang,
           qty_barang: item.retur_barang,
           total_harga: item.harga_barang * item.retur_barang,
           tanggal_retur: returAsli?.tanggal_retur || new Date(),
-          nama_sales: oldJual.nama_sales,
         }));
 
-      await tx.jretur.createMany({
+      await tx.bretur.createMany({
         data: retur,
       });
 
-      // Update client sldakhir_piutang
+      // Update client sldakhir_utang
       const newNilaiNota = validatedData.dataRetur.reduce(
         (acc, curr) => acc + curr.total_harga,
         0
@@ -164,17 +162,17 @@ export async function PUT(
 
       await tx.client.update({
         where: {
-          id: oldJual.id_client,
+          id: oldBeli.id_client,
         },
         data: {
-          sldakhir_piutang: {
-            increment: totalAkhir - oldJnota.nilai_nota,
+          sldakhir_utang: {
+            increment: totalAkhir - oldBnota.nilai_nota,
           },
         },
       });
 
-      // Update jnota with the new total
-      await tx.jnota.update({
+      // Update bnota with the new total
+      await tx.bnota.update({
         where: {
           nomor_nota: nomorNota,
         },
