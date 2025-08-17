@@ -1,8 +1,15 @@
+"use client";
+
+import ClientTable from "@/components/edit/daftar/ClientTable";
+import { Box, Typography } from "@mui/material";
+
 export default function ClientPage() {
   return (
-    <div>
-      <h1>Client Page</h1>
-      {/* Add your client page content here */}
-    </div>
+    <Box>
+      <Typography variant="h6" gutterBottom marginBottom={2}>
+        Edit Daftar Client
+      </Typography>
+      <ClientTable />
+    </Box>
   );
 }
