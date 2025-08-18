@@ -1,8 +1,15 @@
+"use client";
+
+import StockTable from "@/components/edit/daftar/StockTable";
+import { Box, Typography } from "@mui/material";
+
 export default function StockPage() {
   return (
-    <div>
-      <h1>Stock Management</h1>
-      {/* Add your stock management components here */}
-    </div>
+    <Box>
+      <Typography variant="h6" gutterBottom marginBottom={2}>
+        Edit Daftar Stock
+      </Typography>
+      <StockTable />
+    </Box>
   );
 }
