@@ -115,7 +115,7 @@ export default function ClientTable() {
 
   const handleEdit = (data: client) => {
     modals.open({
-      title: "Retur Beli Barang",
+      title: "Edit Client",
       type: "form",
       size: "sm",
       children: <EditClientForm {...data} onSaveSuccess={fetchClients} />,
