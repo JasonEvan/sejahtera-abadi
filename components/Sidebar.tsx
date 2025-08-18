@@ -21,7 +21,11 @@ export const menus = [
   },
   { label: "Transaksi", path: "/dashboard/transaksi", icon: <PaymentIcon /> },
   { label: "Pelunasan", path: "/dashboard/pelunasan", icon: <PaymentsIcon /> },
-  { label: "Edit", path: "/dashboard/edit", icon: <EditIcon /> },
+  {
+    label: "Edit",
+    path: "/dashboard/edit/transaksi/penjualan",
+    icon: <EditIcon />,
+  },
   { label: "Lihat", path: "/dashboard/lihat", icon: <ListAltIcon /> },
   { label: "Retur", path: "/dashboard/retur", icon: <AssignmentReturnIcon /> },
   { label: "Backup", path: "/dashboard/backup", icon: <BackupIcon /> },

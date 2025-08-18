@@ -4,6 +4,28 @@ import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
 
+export async function GET() {
+  try {
+    const prisma = PrismaService.getInstance();
+    const stocks = await prisma.stock.findMany({
+      orderBy: {
+        nama_barang: "asc",
+      },
+    });
+
+    return NextResponse.json({ data: stocks });
+  } catch (error) {
+    console.error("Error fetching stocks:", error);
+    return NextResponse.json(
+      {
+        message: "Failed to fetch stocks",
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500, headers: { "Content-Type": "application/json" } }
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Parse the request body

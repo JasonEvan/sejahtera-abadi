@@ -11,7 +11,7 @@ export interface DataPenjualanI {
   subtotal: number;
 }
 
-interface MenuBarangJual {
+export interface MenuBarangJual {
   nama_barang: string;
   jual_barang: number;
   stock_akhir: number;
