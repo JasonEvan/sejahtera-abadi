@@ -144,30 +144,27 @@ export const useReturBeliStore = create<ReturStore>((set, get) => ({
 
   returBarang: (data, jumlahReturBaru, jumlahReturSebelum) => {
     set((state) => {
-      const nilaiReturSebelum = data.harga_barang * jumlahReturSebelum;
-      const nilaiReturSebelumSetelahDiskon =
-        nilaiReturSebelum - (nilaiReturSebelum * (data.diskon_nota || 0)) / 100;
+      const selisihQtyRetur = jumlahReturBaru - jumlahReturSebelum;
 
-      const nilaiReturBaru = data.harga_barang * jumlahReturBaru;
-      const nilaiReturBaruSetelahDiskon =
-        nilaiReturBaru - (nilaiReturBaru * (data.diskon_nota || 0)) / 100;
+      const selisihNilaiGross = data.harga_barang * selisihQtyRetur;
 
-      const selisihNilai =
-        nilaiReturBaruSetelahDiskon - nilaiReturSebelumSetelahDiskon;
+      const diskonPersen = (state.diskon || 0) / 100;
+      const selisihNilaiNet = selisihNilaiGross * (1 - diskonPersen);
 
       return {
         dataNota: state.dataNota.map((item) =>
           item.id === data.id
             ? {
                 ...item,
-                qty_barang:
-                  item.qty_barang + jumlahReturSebelum - jumlahReturBaru,
+                qty_barang: item.qty_barang - selisihQtyRetur,
                 retur_barang: jumlahReturBaru,
+                total_harga:
+                  item.harga_barang * (item.qty_barang - selisihQtyRetur),
               }
             : item
         ),
-        totalAkhir: state.totalAkhir - selisihNilai,
-        nilaiRetur: state.nilaiRetur + selisihNilai,
+        totalAkhir: state.totalAkhir - selisihNilaiNet,
+        nilaiRetur: state.nilaiRetur + selisihNilaiNet,
       };
     });
   },
@@ -327,30 +324,27 @@ export const useReturJualStore = create<ReturStore>((set, get) => ({
 
   returBarang: (data, jumlahReturBaru, jumlahReturSebelum) => {
     set((state) => {
-      const nilaiReturSebelum = data.harga_barang * jumlahReturSebelum;
-      const nilaiReturSebelumSetelahDiskon =
-        nilaiReturSebelum - (nilaiReturSebelum * (data.diskon_nota || 0)) / 100;
+      const selisihQtyRetur = jumlahReturBaru - jumlahReturSebelum;
 
-      const nilaiReturBaru = data.harga_barang * jumlahReturBaru;
-      const nilaiReturBaruSetelahDiskon =
-        nilaiReturBaru - (nilaiReturBaru * (data.diskon_nota || 0)) / 100;
+      const selisihNilaiGross = data.harga_barang * selisihQtyRetur;
 
-      const selisihNilai =
-        nilaiReturBaruSetelahDiskon - nilaiReturSebelumSetelahDiskon;
+      const diskonPersen = (state.diskon || 0) / 100;
+      const selisihNilaiNet = selisihNilaiGross * (1 - diskonPersen);
 
       return {
         dataNota: state.dataNota.map((item) =>
           item.id === data.id
             ? {
                 ...item,
-                qty_barang:
-                  item.qty_barang + jumlahReturSebelum - jumlahReturBaru,
+                qty_barang: item.qty_barang - selisihQtyRetur,
                 retur_barang: jumlahReturBaru,
+                total_harga:
+                  item.harga_barang * (item.qty_barang - selisihQtyRetur),
               }
             : item
         ),
-        totalAkhir: state.totalAkhir - selisihNilai,
-        nilaiRetur: state.nilaiRetur + selisihNilai,
+        totalAkhir: state.totalAkhir - selisihNilaiNet,
+        nilaiRetur: state.nilaiRetur + selisihNilaiNet,
       };
     });
   },
