@@ -26,7 +26,11 @@ export const menus = [
     path: "/dashboard/edit/transaksi/penjualan",
     icon: <EditIcon />,
   },
-  { label: "Lihat", path: "/dashboard/lihat", icon: <ListAltIcon /> },
+  {
+    label: "Lihat",
+    path: "/dashboard/lihat/persediaan",
+    icon: <ListAltIcon />,
+  },
   { label: "Retur", path: "/dashboard/retur", icon: <AssignmentReturnIcon /> },
   { label: "Backup", path: "/dashboard/backup", icon: <BackupIcon /> },
   { label: "Print", path: "/dashboard/print", icon: <ReceiptIcon /> },
