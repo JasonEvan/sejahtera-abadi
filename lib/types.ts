@@ -101,3 +101,25 @@ export interface UpdatePelunasanDTO {
   saldo_nota: number;
   lunas_lama: number;
 }
+
+export interface TableRow {
+  nomor_nota: string;
+  tanggal_nota: string;
+  nama_client: string;
+  kota_client: string;
+  tipe: string;
+  harga: number;
+  qty_in: number | null;
+  qty_out: number | null;
+  qty_akhir: number;
+}
+
+export interface PersediaanDTO {
+  data: TableRow[];
+  summary: {
+    totalQtyIn: number;
+    totalQtyOut: number;
+    stockAwal: number;
+    finalStock: number;
+  };
+}
