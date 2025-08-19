@@ -76,7 +76,7 @@ export default function NoteSummary() {
     <Box>
       <form className="w-full" onSubmit={formik.handleSubmit}>
         <Grid container spacing={4} marginBottom={4}>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
             <TextField
               disabled
               label="Nilai Nota"
@@ -100,7 +100,7 @@ export default function NoteSummary() {
               }}
             />
           </Grid>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
             <TextField
               disabled
               label="Nilai Akhir"
@@ -122,7 +122,7 @@ export default function NoteSummary() {
               }}
             />
           </Grid>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
             <TextField
               label="Diskon"
               type="number"
@@ -143,7 +143,7 @@ export default function NoteSummary() {
               }}
             />
           </Grid>
-          <Grid size={6}>
+          <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }}>
             <Button variant="contained" type="submit" loading={isSubmitting}>
               Submit
             </Button>
