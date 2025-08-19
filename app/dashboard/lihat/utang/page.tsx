@@ -1,8 +1,15 @@
+"use client";
+
+import UtangSemuaTable from "@/components/lihat/utang/UtangSemuaTable";
+import { Box, Typography } from "@mui/material";
+
 export default function UtangPage() {
   return (
-    <div>
-      <h1>Utang Page</h1>
-      {/* Add your content here */}
-    </div>
+    <Box>
+      <Typography variant="h6" gutterBottom>
+        Utang Semua Langganan
+      </Typography>
+      <UtangSemuaTable />
+    </Box>
   );
 }

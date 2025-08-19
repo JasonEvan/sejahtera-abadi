@@ -102,6 +102,7 @@ export interface UpdatePelunasanDTO {
   lunas_lama: number;
 }
 
+// Persediaan Table Row Interface
 export interface TableRow {
   nomor_nota: string;
   tanggal_nota: string;
@@ -121,5 +122,25 @@ export interface PersediaanDTO {
     totalQtyOut: number;
     stockAwal: number;
     finalStock: number;
+  };
+}
+
+export interface UtangTableRow {
+  nama_client: string;
+  kota_client: string;
+  nomor_nota: string;
+  tanggal_nota: string;
+  nilai_nota: string;
+  lunas_nota: string;
+  tanggal_lunas: string;
+  saldo_nota: string;
+}
+
+export interface UtangSemuaDTO {
+  data: UtangTableRow[];
+  summary: {
+    totalNilaiNota: string;
+    totalLunasNota: string;
+    sisaUtang: string;
   };
 }
