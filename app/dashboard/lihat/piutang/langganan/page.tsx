@@ -1,8 +1,17 @@
+"use client";
+
+import FormLangganan from "@/components/lihat/piutang/FormLangganan";
+import PiutangLanggananTable from "@/components/lihat/piutang/PiutangLanggananTable";
+import { Box, Typography } from "@mui/material";
+
 export default function PiutangPerLanggananPage() {
   return (
-    <div>
-      <h1>Piutang per Langganan Page</h1>
-      {/* Add your content here */}
-    </div>
+    <Box>
+      <Typography variant="h6" gutterBottom>
+        Piutang Langganan
+      </Typography>
+      <FormLangganan />
+      <PiutangLanggananTable />
+    </Box>
   );
 }
