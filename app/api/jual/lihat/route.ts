@@ -3,10 +3,10 @@ import { PrismaService } from "@/lib/prisma";
 import { UtangTableRow } from "@/lib/types";
 import { NextResponse } from "next/server";
 
-interface UtangQueryResult {
+interface PiutangQueryResult {
   id_client: number;
   nama_client: string;
-  kota_client: string | null;
+  kota_client: string;
   nomor_nota: string;
   tanggal_nota: Date;
   nilai_nota: number;
@@ -17,41 +17,53 @@ interface UtangQueryResult {
 export async function GET() {
   try {
     const prisma = PrismaService.getInstance();
-    const results: UtangQueryResult[] = await prisma.$queryRaw`
+    const results: PiutangQueryResult[] = await prisma.$queryRaw`
       SELECT 
-        b.id_client, c.nama_client, c.kota_client,
-        b.nomor_nota, b.tanggal_nota, b.nilai_nota,
-        l.tanggal_lunas, l.lunas_nota
-      FROM bnota b
-      JOIN client c ON b.id_client = c.id
-      LEFT JOIN blunas l ON b.nomor_nota = l.nomor_nota AND b.id_client = l.id_client
-      ORDER BY b.tanggal_nota, l.tanggal_lunas;
+        j.id_client,
+        c.nama_client, 
+        c.kota_client,
+        j.nomor_nota, 
+        j.tanggal_nota, 
+        j.nilai_nota,
+        l.tanggal_lunas,
+        l.lunas_nota
+      FROM 
+        jnota j
+      JOIN 
+        client c ON j.id_client = c.id
+      LEFT JOIN 
+        jlunas l ON j.nomor_nota = l.nomor_nota AND j.id_client = l.id_client
+      ORDER BY 
+        j.tanggal_nota, l.tanggal_lunas;
     `;
 
-    const groupedByNota = results.reduce(
-      (acc: Record<string, UtangQueryResult[]>, curr) => {
-        const key = curr.nomor_nota;
-        if (!acc[key]) {
-          acc[key] = [];
-        }
-        acc[key].push(curr);
-        return acc;
-      },
-      {}
-    );
+    const groupedByNota = results.reduce((acc, curr) => {
+      const key = curr.nomor_nota;
+      if (!acc.has(key)) {
+        acc.set(key, []);
+      }
 
+      acc.get(key)!.push(curr);
+      return acc;
+    }, new Map<string, PiutangQueryResult[]>());
+
+    /**
+     * Use UtangTableRow because the structure is similar
+     * to the one used in the 'beli' endpoint.
+     */
     const tableRows: UtangTableRow[] = [];
     let totalNilaiNota = 0;
     let totalLunasNota = 0;
 
-    for (const rows of Object.values(groupedByNota)) {
+    for (const rows of groupedByNota.values()) {
       const firstRow = rows[0];
       const nilaiNota = firstRow.nilai_nota;
       let saldoNota = nilaiNota;
 
       totalNilaiNota += nilaiNota;
 
-      const payments = rows.filter((row) => row.lunas_nota !== null);
+      const payments = rows.filter((r) => r.lunas_nota !== null);
+
       if (payments.length === 0) {
         tableRows.push({
           nama_client: firstRow.nama_client,
@@ -87,16 +99,18 @@ export async function GET() {
     const summary = {
       totalNilaiNota: totalNilaiNota.toLocaleString("id-ID"),
       totalLunasNota: totalLunasNota.toLocaleString("id-ID"),
-      sisaUtang: (totalNilaiNota - totalLunasNota).toLocaleString("id-ID"),
+      sisaPiutang: (totalNilaiNota - totalLunasNota).toLocaleString("id-ID"),
     };
 
     return NextResponse.json({ data: tableRows, summary });
   } catch (error) {
-    console.error("Error fetching utang data:", error);
+    console.error("Error fetching piutang data:", error);
     return NextResponse.json(
       {
         error:
-          error instanceof Error ? error.message : "Failed to fetch utang data",
+          error instanceof Error
+            ? error.message
+            : "Failed to fetch piutang data",
       },
       { status: 500 }
     );

@@ -145,6 +145,15 @@ export interface UtangSemuaDTO {
   };
 }
 
+export interface PiutangSemuaDTO {
+  data: UtangTableRow[];
+  summary: {
+    totalNilaiNota: string;
+    totalLunasNota: string;
+    sisaPiutang: string;
+  };
+}
+
 export interface DetailUtangTableRow {
   nomor_nota: string;
   tanggal_nota: string;
