@@ -144,3 +144,12 @@ export interface UtangSemuaDTO {
     sisaUtang: string;
   };
 }
+
+export interface DetailUtangTableRow {
+  nomor_nota: string;
+  tanggal_nota: string;
+  nilai_nota: string;
+  lunas_nota: string;
+  tanggal_lunas: string;
+  saldo_nota: string;
+}
