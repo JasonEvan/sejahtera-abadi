@@ -28,23 +28,21 @@ export async function GET() {
       ORDER BY b.tanggal_nota, l.tanggal_lunas;
     `;
 
-    const groupedByNota = results.reduce(
-      (acc: Record<string, UtangQueryResult[]>, curr) => {
-        const key = curr.nomor_nota;
-        if (!acc[key]) {
-          acc[key] = [];
-        }
-        acc[key].push(curr);
-        return acc;
-      },
-      {}
-    );
+    const groupedByNota = results.reduce((acc, curr) => {
+      const key = curr.nomor_nota;
+      if (!acc.has(key)) {
+        acc.set(key, []);
+      }
+
+      acc.get(key)!.push(curr);
+      return acc;
+    }, new Map<string, UtangQueryResult[]>());
 
     const tableRows: UtangTableRow[] = [];
     let totalNilaiNota = 0;
     let totalLunasNota = 0;
 
-    for (const rows of Object.values(groupedByNota)) {
+    for (const rows of groupedByNota.values()) {
       const firstRow = rows[0];
       const nilaiNota = firstRow.nilai_nota;
       let saldoNota = nilaiNota;
