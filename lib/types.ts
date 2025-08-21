@@ -173,3 +173,37 @@ export interface DetailTransaksiTableRow {
   harga_barang: string;
   total_harga: string;
 }
+
+export interface LabaQueryResult {
+  nama_sales: string;
+  nomor_nota: string;
+  tanggal_nota: Date;
+  nama_client: string | null;
+  kota_client: string | null;
+  total_nota: string;
+  laba_nota: string;
+}
+
+export type FormattedInvoice = Omit<
+  LabaQueryResult,
+  "nama_sales" | "tanggal_nota"
+> & {
+  tanggal_nota: string;
+};
+
+export interface LaporanLaba {
+  groupedBySales: Record<
+    string,
+    {
+      invoices: FormattedInvoice[];
+      summary: {
+        totalNota: number;
+        totalLaba: number;
+      };
+    }
+  >;
+  grandSummary: {
+    grandTotalNota: number;
+    grandTotalLaba: number;
+  };
+}
