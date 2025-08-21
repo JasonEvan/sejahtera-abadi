@@ -162,3 +162,14 @@ export interface DetailUtangTableRow {
   tanggal_lunas: string;
   saldo_nota: string;
 }
+
+export interface DetailTransaksiTableRow {
+  nomor_nota: string;
+  tanggal_nota: string;
+  nama_client: string;
+  kota_client: string;
+  nama_barang: string;
+  qty_barang: number;
+  harga_barang: string;
+  total_harga: string;
+}
