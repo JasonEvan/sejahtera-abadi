@@ -101,3 +101,109 @@ export interface UpdatePelunasanDTO {
   saldo_nota: number;
   lunas_lama: number;
 }
+
+// Persediaan Table Row Interface
+export interface TableRow {
+  nomor_nota: string;
+  tanggal_nota: string;
+  nama_client: string;
+  kota_client: string;
+  tipe: string;
+  harga: number;
+  qty_in: number | null;
+  qty_out: number | null;
+  qty_akhir: number;
+}
+
+export interface PersediaanDTO {
+  data: TableRow[];
+  summary: {
+    totalQtyIn: number;
+    totalQtyOut: number;
+    stockAwal: number;
+    finalStock: number;
+  };
+}
+
+export interface UtangTableRow {
+  nama_client: string;
+  kota_client: string;
+  nomor_nota: string;
+  tanggal_nota: string;
+  nilai_nota: string;
+  lunas_nota: string;
+  tanggal_lunas: string;
+  saldo_nota: string;
+}
+
+export interface UtangSemuaDTO {
+  data: UtangTableRow[];
+  summary: {
+    totalNilaiNota: string;
+    totalLunasNota: string;
+    sisaUtang: string;
+  };
+}
+
+export interface PiutangSemuaDTO {
+  data: UtangTableRow[];
+  summary: {
+    totalNilaiNota: string;
+    totalLunasNota: string;
+    sisaPiutang: string;
+  };
+}
+
+export interface DetailUtangTableRow {
+  nomor_nota: string;
+  tanggal_nota: string;
+  nilai_nota: string;
+  lunas_nota: string;
+  tanggal_lunas: string;
+  saldo_nota: string;
+}
+
+export interface DetailTransaksiTableRow {
+  nomor_nota: string;
+  tanggal_nota: string;
+  nama_client: string;
+  kota_client: string;
+  nama_barang: string;
+  qty_barang: number;
+  harga_barang: string;
+  total_harga: string;
+}
+
+export interface LabaQueryResult {
+  nama_sales: string;
+  nomor_nota: string;
+  tanggal_nota: Date;
+  nama_client: string | null;
+  kota_client: string | null;
+  total_nota: string;
+  laba_nota: string;
+}
+
+export type FormattedInvoice = Omit<
+  LabaQueryResult,
+  "nama_sales" | "tanggal_nota"
+> & {
+  tanggal_nota: string;
+};
+
+export interface LaporanLaba {
+  groupedBySales: Record<
+    string,
+    {
+      invoices: FormattedInvoice[];
+      summary: {
+        totalNota: number;
+        totalLaba: number;
+      };
+    }
+  >;
+  grandSummary: {
+    grandTotalNota: number;
+    grandTotalLaba: number;
+  };
+}
