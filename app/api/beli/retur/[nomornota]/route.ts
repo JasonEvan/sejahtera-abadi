@@ -113,6 +113,23 @@ export async function PUT(
         select: { tanggal_retur: true },
       });
 
+      const returLama = await tx.bretur.findMany({
+        where: { nomor_nota: nomorNota },
+        select: { nama_barang: true, qty_barang: true },
+      });
+
+      await Promise.all(
+        returLama.map((item) =>
+          tx.stock.update({
+            where: { nama_barang: item.nama_barang },
+            data: {
+              stock_akhir: { increment: item.qty_barang }, // Revert stock for retur beli
+              qty_out: { decrement: item.qty_barang }, // Revert qty_out for retur beli
+            },
+          })
+        )
+      );
+
       // Delete existing retur entries for the given nomorNota
       await tx.bretur.deleteMany({
         where: {
@@ -151,6 +168,18 @@ export async function PUT(
       await tx.bretur.createMany({
         data: retur,
       });
+
+      await Promise.all(
+        retur.map((item) =>
+          tx.stock.update({
+            where: { nama_barang: item.nama_barang },
+            data: {
+              stock_akhir: { decrement: item.qty_barang }, // Update stock for retur beli
+              qty_out: { increment: item.qty_barang }, // Update qty_out for retur beli
+            },
+          })
+        )
+      );
 
       // Update client sldakhir_utang
       const newNilaiNota = validatedData.dataRetur.reduce(

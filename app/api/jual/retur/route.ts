@@ -128,6 +128,15 @@ export async function POST(request: NextRequest) {
               nama_sales: jualAsli.nama_sales,
             },
           });
+
+          // [3d] Update stock barang
+          await tx.stock.update({
+            where: { nama_barang: item.nama_barang },
+            data: {
+              stock_akhir: { increment: item.retur_barang },
+              qty_in: { increment: item.retur_barang },
+            },
+          });
         }
       }
 

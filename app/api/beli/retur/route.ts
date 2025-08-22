@@ -127,6 +127,15 @@ export async function POST(request: NextRequest) {
               id_beli: item.id,
             },
           });
+
+          // [3d] Update stock barang
+          await tx.stock.update({
+            where: { nama_barang: item.nama_barang },
+            data: {
+              stock_akhir: { decrement: item.retur_barang },
+              qty_out: { increment: item.retur_barang },
+            },
+          });
         }
       }
 
