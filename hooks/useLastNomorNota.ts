@@ -9,7 +9,13 @@ export const useLastNomorNota = () => {
   const fetchLastNomorNota = async (namaSales: string) => {
     setIsLoading(true);
     try {
-      const res = await fetch(`/api/sales?namasales=${namaSales}`, {
+      const params = {
+        namasales: namaSales,
+      };
+
+      const queryParams = new URLSearchParams(params);
+
+      const res = await fetch(`/api/sales?${queryParams.toString()}`, {
         cache: "no-store",
       });
 

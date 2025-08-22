@@ -32,7 +32,6 @@ export default function ListHistory({
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (namaBarang.trim()) {
-        console.log("Fetching history for:", namaBarang);
         fetchHistory(namaBarang);
       }
     }, 500); // Debounce for 500ms
@@ -41,7 +40,6 @@ export default function ListHistory({
      * Cleanup function to clear the timeout
      */
     return () => {
-      console.log("Clearing timeout for:", namaBarang);
       clearTimeout(timeout);
     };
   }, [namaBarang, fetchHistory]);

@@ -60,7 +60,7 @@ export default function ClientInformation() {
         values.namasales,
         values.nomornota,
         values.tanggal,
-        values.namaclient.split("/")[1] ? values.namaclient.split("/")[1] : ""
+        values.namaclient.split("/")[1] || ""
       );
       setClientInformationDone();
       fetchMenuBarang();

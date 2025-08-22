@@ -18,9 +18,13 @@ export default function FormPersediaan() {
       try {
         setSubmitting(true);
 
-        const encodedNamaBarang = encodeURIComponent(values.namabarang);
+        const params = {
+          namabarang: values.namabarang,
+        };
+
+        const queryParams = new URLSearchParams(params);
         const response = await fetch(
-          `/api/barang/persediaan?namabarang=${encodedNamaBarang}`,
+          `/api/barang/persediaan?${queryParams.toString()}`,
           {
             cache: "no-store",
           }

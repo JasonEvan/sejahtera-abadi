@@ -91,14 +91,18 @@ export const useLunasUtangStore = create<LunasStore>((set, get) => ({
     try {
       set({ isLoading: true });
 
-      const res = await fetch(
-        `/api/nota/pembelian?utang=true&formenu=true&nama=${
-          get().namaClient
-        }&kota=${get().kotaClient}`,
-        {
-          cache: "no-store",
-        }
-      );
+      const params = {
+        utang: "true",
+        formenu: "true",
+        nama: get().namaClient,
+        kota: get().kotaClient,
+      };
+
+      const queryParams = new URLSearchParams(params);
+
+      const res = await fetch(`/api/nota/pembelian?${queryParams.toString()}`, {
+        cache: "no-store",
+      });
 
       if (!res.ok) {
         throw new Error("Failed to fetch nomor nota");
@@ -229,14 +233,18 @@ export const useLunasPiutangStore = create<LunasStore>((set, get) => ({
     try {
       set({ isLoading: true });
 
-      const res = await fetch(
-        `/api/nota/penjualan?piutang=true&formenu=true&nama=${
-          get().namaClient
-        }&kota=${get().kotaClient}`,
-        {
-          cache: "no-store",
-        }
-      );
+      const params = {
+        piutang: "true",
+        formenu: "true",
+        nama: get().namaClient,
+        kota: get().kotaClient,
+      };
+
+      const queryParams = new URLSearchParams(params);
+
+      const res = await fetch(`/api/nota/penjualan?${queryParams.toString()}`, {
+        cache: "no-store",
+      });
 
       if (!res.ok) {
         throw new Error("Failed to fetch nomor nota");

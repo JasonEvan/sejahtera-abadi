@@ -226,6 +226,6 @@ export const useBeliStore = create<BeliStore>()(
         });
       },
     }),
-    { name: "beli-store" }
+    { name: "beli-storage" }
   )
 );

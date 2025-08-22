@@ -99,8 +99,18 @@ export const useEditJualStore = create<EditJualStore>((set, get) => ({
   fetchMenuNota: async (namaClient, kotaClient) => {
     try {
       set({ menuNotaLoading: true });
+
+      const params = {
+        formenu: "true",
+        notpaid: "true",
+        nama: namaClient,
+        kota: kotaClient,
+      };
+
+      const queryParams = new URLSearchParams(params);
+
       const response = await fetch(
-        `/api/nota/penjualan?formenu=true&notpaid=true&nama=${namaClient}&kota=${kotaClient}`,
+        `/api/nota/penjualan?${queryParams.toString()}`,
         { cache: "no-store" }
       );
 
@@ -155,7 +165,14 @@ export const useEditJualStore = create<EditJualStore>((set, get) => ({
   fetchDataNota: async () => {
     try {
       set({ dataNotaLoading: true });
-      const response = await fetch(`/api/jual?nota=${get().nomorNota}`, {
+
+      const params = {
+        nota: get().nomorNota,
+      };
+
+      const queryParams = new URLSearchParams(params);
+
+      const response = await fetch(`/api/jual?${queryParams.toString()}`, {
         cache: "no-store",
       });
 
@@ -188,10 +205,16 @@ export const useEditJualStore = create<EditJualStore>((set, get) => ({
 
   fetchHistory: async (namaBarang) => {
     try {
+      const params = {
+        namaBarang,
+        namaClient: get().namaClient,
+        kotaClient: get().kotaClient,
+      };
+
+      const queryParams = new URLSearchParams(params);
+
       const response = await fetch(
-        `/api/jual/history?namaBarang=${namaBarang}&namaClient=${
-          get().namaClient
-        }&kotaClient=${get().kotaClient}`,
+        `/api/jual/history?${queryParams.toString()}`,
         { cache: "no-store" }
       );
 

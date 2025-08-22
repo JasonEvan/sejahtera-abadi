@@ -82,8 +82,17 @@ export const useReturBeliStore = create<ReturStore>((set, get) => ({
     try {
       set({ menuNotaLoading: true });
 
+      const params = {
+        formenu: "true",
+        notpaid: "true",
+        nama: namaClient,
+        kota: kotaClient,
+      };
+
+      const queryParams = new URLSearchParams(params);
+
       const response = await fetch(
-        `/api/nota/pembelian?formenu=true&notpaid=true&nama=${namaClient}&kota=${kotaClient}`,
+        `/api/nota/pembelian?${queryParams.toString()}`,
         { cache: "no-store" }
       );
 
@@ -109,7 +118,14 @@ export const useReturBeliStore = create<ReturStore>((set, get) => ({
   fetchDataNota: async () => {
     try {
       set({ isLoading: true });
-      const response = await fetch(`/api/beli?nota=${get().nomorNota}`, {
+
+      const params = {
+        nota: get().nomorNota,
+      };
+
+      const queryParams = new URLSearchParams(params);
+
+      const response = await fetch(`/api/beli?${queryParams.toString()}`, {
         cache: "no-store",
       });
 
@@ -262,8 +278,17 @@ export const useReturJualStore = create<ReturStore>((set, get) => ({
     try {
       set({ menuNotaLoading: true });
 
+      const params = {
+        formenu: "true",
+        notpaid: "true",
+        nama: namaClient,
+        kota: kotaClient,
+      };
+
+      const queryParams = new URLSearchParams(params);
+
       const response = await fetch(
-        `/api/nota/penjualan?formenu=true&notpaid=true&nama=${namaClient}&kota=${kotaClient}`,
+        `/api/nota/penjualan?${queryParams.toString()}`,
         { cache: "no-store" }
       );
 
@@ -289,7 +314,14 @@ export const useReturJualStore = create<ReturStore>((set, get) => ({
   fetchDataNota: async () => {
     try {
       set({ isLoading: true });
-      const response = await fetch(`/api/jual?nota=${get().nomorNota}`, {
+
+      const params = {
+        nota: get().nomorNota,
+      };
+
+      const queryParams = new URLSearchParams(params);
+
+      const response = await fetch(`/api/jual?${queryParams.toString()}`, {
         cache: "no-store",
       });
 
