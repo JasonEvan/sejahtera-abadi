@@ -1,5 +1,6 @@
 import {
   Box,
+  Divider,
   Table,
   TableBody,
   TableCell,
@@ -80,7 +81,7 @@ const columns: readonly Column[] = [
   },
 ];
 
-export default function PersediaanTable() {
+export default function PersediaanTable({ barang }: { barang: string }) {
   const { data, stockAwal, totalQtyIn, totalQtyOut, finalStock } =
     usePersediaanStore();
 
@@ -96,15 +97,35 @@ export default function PersediaanTable() {
 
   return (
     <Box sx={{ width: "100%", marginY: 2 }}>
-      <TableContainer sx={{ maxHeight: 550 }}>
+      <TableContainer
+        sx={{
+          maxHeight: 550,
+          "@media print": { maxHeight: "none", overflow: "visible" },
+        }}
+      >
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
+            {/* Untuk Print */}
+            <TableRow sx={{ display: "none", displayPrint: "table-row" }}>
+              <TableCell colSpan={9} sx={{ border: 0 }}>
+                <Typography variant="h6" fontWeight="bold">
+                  SEJAHTERA ABADI
+                </Typography>
+                <Typography variant="body2">Semarang</Typography>
+                <Typography variant="body2" gutterBottom>
+                  Kartu Persediaan {barang}
+                </Typography>
+                <Divider />
+              </TableCell>
+            </TableRow>
+
             <TableRow>
               {columns.map((column) => (
                 <TableCell
                   key={column.id}
                   align={column.align}
                   style={{ minWidth: column.minWidth }}
+                  sx={{ "@media print": { paddingY: "8px", border: 0 } }}
                 >
                   {column.label}
                 </TableCell>
@@ -113,9 +134,20 @@ export default function PersediaanTable() {
           </TableHead>
           <TableBody>
             <TableRow>
-              <TableCell colSpan={2} />
-              <TableCell>SALDO AWAL</TableCell>
-              <TableCell colSpan={6} align="right">
+              <TableCell
+                colSpan={2}
+                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+              />
+              <TableCell
+                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+              >
+                SALDO AWAL
+              </TableCell>
+              <TableCell
+                colSpan={6}
+                align="right"
+                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+              >
                 {stockAwal}
               </TableCell>
             </TableRow>
@@ -124,7 +156,11 @@ export default function PersediaanTable() {
                 {columns.map((column) => {
                   const value = row[column.id];
                   return (
-                    <TableCell key={column.id} align={column.align}>
+                    <TableCell
+                      key={column.id}
+                      align={column.align}
+                      sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+                    >
                       {column.format && typeof value === "number"
                         ? column.format(value)
                         : value}
@@ -134,12 +170,37 @@ export default function PersediaanTable() {
               </TableRow>
             ))}
             <TableRow>
-              <TableCell colSpan={2} />
-              <TableCell>TOTAL QTY</TableCell>
-              <TableCell colSpan={3} />
-              <TableCell align="right">{totalQtyIn}</TableCell>
-              <TableCell align="right">{totalQtyOut}</TableCell>
-              <TableCell align="right">{finalStock}</TableCell>
+              <TableCell
+                colSpan={2}
+                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+              />
+              <TableCell
+                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+              >
+                TOTAL QTY
+              </TableCell>
+              <TableCell
+                colSpan={3}
+                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+              />
+              <TableCell
+                align="right"
+                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+              >
+                {totalQtyIn}
+              </TableCell>
+              <TableCell
+                align="right"
+                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+              >
+                {totalQtyOut}
+              </TableCell>
+              <TableCell
+                align="right"
+                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+              >
+                {finalStock}
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>
