@@ -8,6 +8,8 @@ import {
   TableRow,
   TableCell,
   CircularProgress,
+  Typography,
+  Divider,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
@@ -142,15 +144,35 @@ export default function UtangSemuaTable() {
 
   return (
     <Box sx={{ width: "100%", marginY: 2 }}>
-      <TableContainer sx={{ maxHeight: 550 }}>
+      <TableContainer
+        sx={{
+          maxHeight: 550,
+          "@media print": { maxHeight: "none", overflow: "visible" },
+        }}
+      >
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
+            {/* Untuk Print */}
+            <TableRow sx={{ display: "none", displayPrint: "table-row" }}>
+              <TableCell colSpan={8} sx={{ border: 0 }}>
+                <Typography variant="h6" fontWeight="bold">
+                  SEJAHTERA ABADI
+                </Typography>
+                <Typography variant="body2">Semarang</Typography>
+                <Typography variant="body2" gutterBottom>
+                  Laporan Utang
+                </Typography>
+                <Divider />
+              </TableCell>
+            </TableRow>
+
             <TableRow>
               {columns.map((column) => (
                 <TableCell
                   key={column.id}
                   align={column.align}
                   style={{ minWidth: column.minWidth }}
+                  sx={{ border: 0, "@media print": { paddingY: "8px" } }}
                 >
                   {column.label}
                 </TableCell>
@@ -163,7 +185,11 @@ export default function UtangSemuaTable() {
                 {columns.map((column) => {
                   const value = row[column.id];
                   return (
-                    <TableCell key={column.id} align={column.align}>
+                    <TableCell
+                      key={column.id}
+                      align={column.align}
+                      sx={{ border: 0, "@media print": { paddingY: "8px" } }}
+                    >
                       {column.format && typeof value === "number"
                         ? column.format(value)
                         : value}
@@ -173,13 +199,39 @@ export default function UtangSemuaTable() {
               </TableRow>
             ))}
             <TableRow>
-              <TableCell colSpan={2} />
-              <TableCell>TOTAL</TableCell>
-              <TableCell />
-              <TableCell align="right">{summary.totalNilaiNota}</TableCell>
-              <TableCell align="right">{summary.totalLunasNota}</TableCell>
-              <TableCell />
-              <TableCell align="right">{summary.sisaUtang}</TableCell>
+              <TableCell
+                colSpan={2}
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
+              />
+              <TableCell
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
+              >
+                TOTAL
+              </TableCell>
+              <TableCell
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
+              />
+              <TableCell
+                align="right"
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
+              >
+                {summary.totalNilaiNota}
+              </TableCell>
+              <TableCell
+                align="right"
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
+              >
+                {summary.totalLunasNota}
+              </TableCell>
+              <TableCell
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
+              />
+              <TableCell
+                align="right"
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
+              >
+                {summary.sisaUtang}
+              </TableCell>
             </TableRow>
           </TableBody>
         </Table>
