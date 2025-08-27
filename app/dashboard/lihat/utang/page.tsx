@@ -23,7 +23,7 @@ export default function UtangPage() {
         variant="contained"
         color="info"
         onClick={() => window.print()}
-        sx={{ displayPrint: "none" }}
+        sx={{ marginY: 2, displayPrint: "none" }}
       >
         Print
       </Button>
