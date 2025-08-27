@@ -28,6 +28,7 @@ export default function CustomAppBar() {
       sx={{
         marginBottom: 2,
         display: { xs: "block", sm: "block", md: "none", lg: "none" },
+        displayPrint: "none",
       }}
     >
       <Toolbar>

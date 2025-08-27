@@ -82,7 +82,9 @@ export default function EditLayout({
     <Box sx={{ display: "flex" }}>
       <Box sx={{ position: "relative", width: "100%", minHeight: "100vh" }}>
         <Box component="main">{children}</Box>
-        <Box sx={{ position: "absolute", top: 0, right: 0 }}>
+        <Box
+          sx={{ position: "absolute", top: 0, right: 0, displayPrint: "none" }}
+        >
           <IconButton onClick={() => setOpen(true)}>
             <MenuOpenIcon />
           </IconButton>

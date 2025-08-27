@@ -23,6 +23,10 @@ export default function DashboardLayout({
           flexGrow: 10,
           p: 2,
           marginLeft: { xs: 0, sm: 0, md: "230px", lg: "230px" },
+          "@media print": {
+            p: 0,
+            marginLeft: 0,
+          },
         }}
       >
         {children}
