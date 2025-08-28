@@ -125,7 +125,7 @@ export default function PersediaanTable({ barang }: { barang: string }) {
                   key={column.id}
                   align={column.align}
                   style={{ minWidth: column.minWidth }}
-                  sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+                  sx={{ border: 0, "@media print": { paddingY: "8px" } }}
                 >
                   {column.label}
                 </TableCell>
@@ -136,17 +136,17 @@ export default function PersediaanTable({ barang }: { barang: string }) {
             <TableRow>
               <TableCell
                 colSpan={2}
-                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
               />
               <TableCell
-                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
               >
                 SALDO AWAL
               </TableCell>
               <TableCell
                 colSpan={6}
                 align="right"
-                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
               >
                 {stockAwal}
               </TableCell>
@@ -159,7 +159,7 @@ export default function PersediaanTable({ barang }: { barang: string }) {
                     <TableCell
                       key={column.id}
                       align={column.align}
-                      sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+                      sx={{ border: 0, "@media print": { paddingY: "8px" } }}
                     >
                       {column.format && typeof value === "number"
                         ? column.format(value)
@@ -172,32 +172,32 @@ export default function PersediaanTable({ barang }: { barang: string }) {
             <TableRow>
               <TableCell
                 colSpan={2}
-                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
               />
               <TableCell
-                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
               >
                 TOTAL QTY
               </TableCell>
               <TableCell
                 colSpan={3}
-                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
               />
               <TableCell
                 align="right"
-                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
               >
                 {totalQtyIn}
               </TableCell>
               <TableCell
                 align="right"
-                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
               >
                 {totalQtyOut}
               </TableCell>
               <TableCell
                 align="right"
-                sx={{ "@media print": { paddingY: "8px", border: 0 } }}
+                sx={{ border: 0, "@media print": { paddingY: "8px" } }}
               >
                 {finalStock}
               </TableCell>
