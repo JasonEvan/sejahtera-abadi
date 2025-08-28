@@ -168,10 +168,14 @@ export interface DetailTransaksiTableRow {
   tanggal_nota: string;
   nama_client: string;
   kota_client: string;
+  alamat_client: string;
   nama_barang: string;
   qty_barang: number;
+  satuan_barang: string;
   harga_barang: string;
   total_harga: string;
+  nama_sales: string;
+  kode_sales: string;
 }
 
 export interface LabaQueryResult {

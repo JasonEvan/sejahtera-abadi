@@ -8,10 +8,14 @@ interface DetailPenjualanQueryResult {
   tanggal_nota: Date;
   nama_client: string | null;
   kota_client: string | null;
+  alamat_client: string | null;
   nama_barang: string;
   qty_barang: number;
+  satuan_barang: string;
   harga_barang: number;
   total_harga: number;
+  nama_sales: string;
+  kode_sales: string;
 }
 
 export async function GET(request: NextRequest) {
@@ -33,11 +37,19 @@ export async function GET(request: NextRequest) {
         j.nama_barang, 
         j.harga_barang, 
         j.qty_barang, 
+        st.satuan_barang, 
+        j.nama_sales, 
         j.total_harga,
         c.nama_client, 
-        c.kota_client
+        c.kota_client, 
+        c.alamat_client, 
+        s.kode_sales
       FROM 
         jual j
+      JOIN
+        salesman s ON j.nama_sales = s.nama_sales
+      JOIN
+        stock st ON j.nama_barang = st.nama_barang
       LEFT JOIN 
         client c ON j.id_client = c.id
       WHERE 
@@ -59,10 +71,14 @@ export async function GET(request: NextRequest) {
         tanggal_nota: formatDate(curr.tanggal_nota),
         nama_client: curr.nama_client || "N/A",
         kota_client: curr.kota_client || "",
+        alamat_client: curr.alamat_client || "",
         nama_barang: curr.nama_barang,
         qty_barang: curr.qty_barang,
+        satuan_barang: curr.satuan_barang,
         harga_barang: curr.harga_barang.toLocaleString("id-ID"),
         total_harga: curr.total_harga.toLocaleString("id-ID"),
+        nama_sales: curr.nama_sales,
+        kode_sales: curr.kode_sales,
       };
 
       acc.tableRows.push(formattedRow);

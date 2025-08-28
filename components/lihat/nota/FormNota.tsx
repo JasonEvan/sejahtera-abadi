@@ -4,9 +4,14 @@ import { useFormik } from "formik";
 type FormNotaProps = {
   handleSubmit: (nomorNota: string) => Promise<void>;
   handleError: (error: string) => void;
+  setNomorNota: React.Dispatch<React.SetStateAction<string>>;
 };
 
-export default function FormNota({ handleSubmit, handleError }: FormNotaProps) {
+export default function FormNota({
+  handleSubmit,
+  handleError,
+  setNomorNota,
+}: FormNotaProps) {
   const formik = useFormik({
     initialValues: {
       nomornota: "",
@@ -15,6 +20,7 @@ export default function FormNota({ handleSubmit, handleError }: FormNotaProps) {
       try {
         setSubmitting(true);
         await handleSubmit(values.nomornota);
+        setNomorNota(values.nomornota);
       } catch (error) {
         handleError(
           error instanceof Error ? error.message : "An error occurred"
@@ -27,7 +33,12 @@ export default function FormNota({ handleSubmit, handleError }: FormNotaProps) {
 
   return (
     <form className="w-full" onSubmit={formik.handleSubmit}>
-      <Grid container spacing={2} marginBottom={2}>
+      <Grid
+        container
+        spacing={2}
+        marginBottom={2}
+        sx={{ displayPrint: "none" }}
+      >
         <Grid size={6}>
           <TextField
             label="Nomor Nota"
@@ -42,7 +53,12 @@ export default function FormNota({ handleSubmit, handleError }: FormNotaProps) {
           />
         </Grid>
       </Grid>
-      <Button type="submit" variant="contained" loading={formik.isSubmitting}>
+      <Button
+        type="submit"
+        variant="contained"
+        loading={formik.isSubmitting}
+        sx={{ displayPrint: "none" }}
+      >
         Search
       </Button>
     </form>
