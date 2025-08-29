@@ -8,7 +8,6 @@ import EditIcon from "@mui/icons-material/Edit";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import AssignmentReturnIcon from "@mui/icons-material/AssignmentReturn";
 import BackupIcon from "@mui/icons-material/Backup";
-import ReceiptIcon from "@mui/icons-material/Receipt";
 import { usePathname } from "next/navigation";
 import { Box, Button, Typography } from "@mui/material";
 
@@ -33,7 +32,6 @@ export const menus = [
   },
   { label: "Retur", path: "/dashboard/retur", icon: <AssignmentReturnIcon /> },
   { label: "Backup", path: "/dashboard/backup", icon: <BackupIcon /> },
-  { label: "Print", path: "/dashboard/print", icon: <ReceiptIcon /> },
 ];
 
 export default function Sidebar() {
