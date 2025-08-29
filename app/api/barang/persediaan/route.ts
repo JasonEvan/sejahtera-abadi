@@ -1,4 +1,5 @@
 import { formatDate } from "@/lib/formatter";
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { TableRow } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
@@ -22,6 +23,7 @@ export async function GET(request: NextRequest) {
   const namaBarang = request.nextUrl.searchParams.get("namabarang");
 
   if (!namaBarang) {
+    logger.warn("GET /api/barang/persediaan missing namabarang parameter");
     return NextResponse.json(
       { message: "Nama barang is required" },
       { status: 400, headers: { "Content-Type": "application/json" } }
@@ -141,12 +143,19 @@ export async function GET(request: NextRequest) {
       finalStock: runningStock,
     };
 
+    logger.info(
+      `GET /api/barang/persediaan succeeded for namabarang=${namaBarang}. Found ${tableRows.length} records.`
+    );
     return NextResponse.json({ data: tableRows, summary });
   } catch (error) {
-    console.error("Error fetching persediaan data:", error);
+    logger.error(
+      `GET /api/barang/persediaan failed for namabarang=${namaBarang}: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       { message: "Failed to fetch persediaan data" },
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500 }
     );
   }
 }

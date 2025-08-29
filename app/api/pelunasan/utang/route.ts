@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { PelunasanDTO } from "@/lib/types";
 import { validate } from "@/lib/zod";
@@ -20,9 +21,16 @@ export async function GET(request: NextRequest) {
       select,
     });
 
+    logger.info(
+      `GET /api/pelunasan/utang succeeded. Found ${data.length} items.`
+    );
     return NextResponse.json({ data });
   } catch (error) {
-    console.error("Error fetching pelunasan data:", error);
+    logger.error(
+      `GET /api/pelunasan/utang failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Internal Server Error",
@@ -109,12 +117,19 @@ export async function POST(request: NextRequest) {
       });
     });
 
+    logger.info(
+      `POST /api/pelunasan/utang succeeded. Created payments for client ${validatedData.namaClient}.`
+    );
     return NextResponse.json(
       { message: "Pelunasan berhasil diproses" },
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error processing pelunasan:", error);
+    logger.error(
+      `POST /api/pelunasan/utang failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Internal Server Error",

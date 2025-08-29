@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { ReturDTO } from "@/lib/types";
 import { validate } from "@/lib/zod";
@@ -26,9 +27,14 @@ export async function GET(request: NextRequest) {
       distinct: forMenu ? ["nomor_nota"] : undefined,
     });
 
+    logger.info(`GET /api/beli/retur succeeded. Found ${data.length} items.`);
     return NextResponse.json({ data });
   } catch (error) {
-    console.error("Error fetching retur data:", error);
+    logger.error(
+      `GET /api/beli/retur failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
@@ -163,12 +169,17 @@ export async function POST(request: NextRequest) {
       });
     });
 
+    logger.info(`POST /api/beli/retur succeeded. Retur processed.`);
     return NextResponse.json(
       { message: "Retur berhasil diproses" },
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error processing retur:", error);
+    logger.error(
+      `POST /api/beli/retur failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }

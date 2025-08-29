@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { BeliDTO, EditDTO } from "@/lib/types";
 import { validate } from "@/lib/zod";
@@ -23,11 +24,15 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    logger.info(`GET /api/beli succeeded. Found ${data.length} items.`);
     return NextResponse.json(
       { data },
       { status: 200, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
+    logger.error(
+      `GET /api/beli failed: ${error instanceof Error ? error.message : error}`
+    );
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "An error occurred" },
       { status: 500, headers: { "Content-Type": "application/json" } }
@@ -140,14 +145,18 @@ export async function POST(request: NextRequest) {
       });
     });
 
+    logger.info(`POST /api/beli succeeded. New beli data created.`);
     return NextResponse.json(
       { message: "Data successfully saved" },
-      { status: 201, headers: { "Content-Type": "application/json" } }
+      { status: 201 }
     );
   } catch (error) {
+    logger.error(
+      `POST /api/beli failed: ${error instanceof Error ? error.message : error}`
+    );
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "An error occurred" },
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500 }
     );
   }
 }
@@ -312,15 +321,18 @@ export async function PUT(request: NextRequest) {
       });
     });
 
+    logger.info("PUT /api/beli succeeded. Beli data updated.");
     return NextResponse.json(
       { message: "Data successfully updated" },
-      { status: 200, headers: { "Content-Type": "application/json" } }
+      { status: 200 }
     );
   } catch (error) {
-    console.error("Error in PUT /api/beli:", error);
+    logger.error(
+      `PUT /api/beli failed: ${error instanceof Error ? error.message : error}`
+    );
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "An error occurred" },
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500 }
     );
   }
 }

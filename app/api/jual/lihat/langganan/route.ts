@@ -1,4 +1,5 @@
 import { formatDate } from "@/lib/formatter";
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { DetailUtangTableRow } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
@@ -16,6 +17,7 @@ export async function GET(request: NextRequest) {
   const kota = request.nextUrl.searchParams.get("kota") || "";
 
   if (!nama) {
+    logger.warn("GET /api/jual/lihat/langganan failed: Nama cannot be empty");
     return NextResponse.json(
       { error: "Nama client tidak boleh kosong" },
       { status: 400 }
@@ -37,6 +39,9 @@ export async function GET(request: NextRequest) {
     });
 
     if (!client) {
+      logger.warn(
+        `GET /api/jual/lihat/langganan failed: Client not found (nama: ${nama}, kota: ${kota})`
+      );
       return NextResponse.json(
         { error: "Client tidak ditemukan" },
         { status: 404 }
@@ -117,9 +122,16 @@ export async function GET(request: NextRequest) {
       sisaPiutang: (totalNilaiNota - totalLunasNota).toLocaleString("id-ID"),
     };
 
+    logger.info(
+      `GET /api/jual/lihat/langganan succeeded. Found ${tableRows.length} items.`
+    );
     return NextResponse.json({ data: tableRows, summary });
   } catch (error) {
-    console.error("Error fetching langganan:", error);
+    logger.error(
+      `GET /api/jual/lihat/langganan failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error:

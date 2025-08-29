@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
@@ -10,6 +11,7 @@ export async function PUT(
   try {
     const id = Number((await params).id);
     if (isNaN(id)) {
+      logger.warn(`PUT /api/sales/${id} failed: Invalid ID`);
       return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
     }
 
@@ -32,9 +34,14 @@ export async function PUT(
       },
     });
 
+    logger.info(`PUT /api/sales/${id} succeeded. Salesman updated.`);
     return NextResponse.json({ message: "Salesman updated successfully" });
   } catch (error) {
-    console.error("Error updating salesman:", error);
+    logger.error(
+      `PUT /api/sales/[id] failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Internal Server Error",

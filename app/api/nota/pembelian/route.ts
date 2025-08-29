@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -78,16 +79,21 @@ export async function GET(request: NextRequest) {
       select,
     });
 
-    return NextResponse.json(
-      { data: nota },
-      { status: 200, headers: { "Content-Type": "application/json" } }
+    logger.info(
+      `GET /api/nota/pembelian succeeded. Found ${nota.length} items.`
     );
+    return NextResponse.json({ data: nota }, { status: 200 });
   } catch (error) {
+    logger.error(
+      `GET /api/nota/pembelian failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Unknown error",
       },
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500 }
     );
   }
 }

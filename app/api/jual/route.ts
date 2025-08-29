@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { EditDTO, JualDTO } from "@/lib/types";
 import { validate } from "@/lib/zod";
@@ -23,14 +24,15 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(
-      { data },
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    logger.info(`GET /api/jual succeeded. Found ${data.length} items.`);
+    return NextResponse.json({ data }, { status: 200 });
   } catch (error) {
+    logger.error(
+      `GET /api/jual failed: ${error instanceof Error ? error.message : error}`
+    );
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "An error occurred" },
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500 }
     );
   }
 }
@@ -152,11 +154,15 @@ export async function POST(request: NextRequest) {
       });
     });
 
+    logger.info(`POST /api/jual succeeded. Jual processed.`);
     return NextResponse.json(
       { message: "Data successfully saved" },
       { status: 201, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
+    logger.error(
+      `POST /api/jual failed: ${error instanceof Error ? error.message : error}`
+    );
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "An error occurred" },
       { status: 500, headers: { "Content-Type": "application/json" } }
@@ -327,15 +333,18 @@ export async function PUT(request: NextRequest) {
       });
     });
 
+    logger.info(`PUT /api/jual succeeded. Jual updated.`);
     return NextResponse.json(
       { message: "Data successfully updated" },
-      { status: 200, headers: { "Content-Type": "application/json" } }
+      { status: 200 }
     );
   } catch (error) {
-    console.error("Error in PUT /api/jual:", error);
+    logger.error(
+      `PUT /api/jual failed: ${error instanceof Error ? error.message : error}`
+    );
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "An error occurred" },
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500 }
     );
   }
 }

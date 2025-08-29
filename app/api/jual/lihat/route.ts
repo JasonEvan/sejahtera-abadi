@@ -1,4 +1,5 @@
 import { formatDate } from "@/lib/formatter";
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { UtangTableRow } from "@/lib/types";
 import { NextResponse } from "next/server";
@@ -102,9 +103,16 @@ export async function GET() {
       sisaPiutang: (totalNilaiNota - totalLunasNota).toLocaleString("id-ID"),
     };
 
+    logger.info(
+      `GET /api/jual/lihat succeeded. Found ${tableRows.length} items.`
+    );
     return NextResponse.json({ data: tableRows, summary });
   } catch (error) {
-    console.error("Error fetching piutang data:", error);
+    logger.error(
+      `GET /api/jual/lihat failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error:

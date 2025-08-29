@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { TambahBarangFormValues } from "@/lib/types";
 import { validate } from "@/lib/zod";
@@ -13,9 +14,14 @@ export async function GET() {
       },
     });
 
+    logger.info(`GET /api/barang succeeded. Found ${stocks.length} items.`);
     return NextResponse.json({ data: stocks });
   } catch (error) {
-    console.error("Error fetching stocks:", error);
+    logger.error(
+      `GET /api/barang failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         message: "Failed to fetch stocks",
@@ -59,12 +65,19 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    logger.info(
+      `POST /api/barang succeeded. Added barang: ${validatedData.nama}`
+    );
     return NextResponse.json(
       { message: "Barang added successfully", data: result },
       { status: 201, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Error processing request:", error);
+    logger.error(
+      `POST /api/barang failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         message: "Failed to add barang",

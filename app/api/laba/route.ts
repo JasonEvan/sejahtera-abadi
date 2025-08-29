@@ -1,4 +1,5 @@
 import { formatDate } from "@/lib/formatter";
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { FormattedInvoice, LabaQueryResult, LaporanLaba } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
@@ -8,6 +9,7 @@ export async function GET(request: NextRequest) {
   const tahun = request.nextUrl.searchParams.get("tahun");
 
   if (!bulan || !tahun) {
+    logger.warn(`GET /api/laba failed: Missing 'bulan' or 'tahun' parameter.`);
     return NextResponse.json(
       { error: "Parameter 'bulan' dan 'tahun' diperlukan" },
       { status: 400 }
@@ -19,6 +21,9 @@ export async function GET(request: NextRequest) {
     const year = parseInt(tahun);
 
     if (isNaN(month) || isNaN(year)) {
+      logger.warn(
+        `GET /api/laba failed: Invalid 'bulan' or 'tahun' parameter.`
+      );
       return NextResponse.json(
         { error: "Parameter 'bulan' dan 'tahun' harus berupa angka" },
         { status: 400 }
@@ -104,9 +109,12 @@ export async function GET(request: NextRequest) {
       return acc;
     }, initialState);
 
+    logger.info(`GET /api/laba succeeded. Found ${results.length} items.`);
     return NextResponse.json({ data: finalReport });
   } catch (error) {
-    console.error("Error fetching Laporan Laba:", error);
+    logger.error(
+      `GET /api/laba failed: ${error instanceof Error ? error.message : error}`
+    );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Internal Server Error",

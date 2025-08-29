@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -14,10 +15,18 @@ export async function GET() {
       },
     });
 
+    logger.info(
+      `GET /api/stock/menu-jual succeeded. Found ${data.length} items.`
+    );
     return NextResponse.json({
       data,
     });
   } catch (error) {
+    logger.error(
+      `GET /api/stock/menu-jual failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error:

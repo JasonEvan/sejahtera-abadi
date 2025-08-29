@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
@@ -16,11 +17,17 @@ export async function GET(request: NextRequest) {
         : undefined
     );
 
+    logger.info(`GET /api/client succeeded. Found ${clients.length} items.`);
     return NextResponse.json(
       { data: clients },
       { headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
+    logger.error(
+      `GET /api/client failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error:
@@ -58,12 +65,17 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    logger.info(`POST /api/client succeeded. Client added successfully.`);
     return NextResponse.json(
       { message: "Client added successfully" },
       { status: 201, headers: { "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Error processing request:", error);
+    logger.error(
+      `POST /api/client failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Internal Server Error",

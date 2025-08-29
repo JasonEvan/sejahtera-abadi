@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { UpdatePelunasanDTO } from "@/lib/types";
 import { validate } from "@/lib/zod";
@@ -25,9 +26,16 @@ export async function GET(
       },
     });
 
+    logger.info(
+      `GET /api/pelunasan/utang/${nomorNota} succeeded. Found ${data.length} items.`
+    );
     return NextResponse.json({ data });
   } catch (error) {
-    console.error("Error fetching pelunasan data:", error);
+    logger.error(
+      `GET /api/pelunasan/utang/[nomornota] failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Internal Server Error",
@@ -128,11 +136,18 @@ export async function PUT(
       });
     });
 
+    logger.info(
+      `PUT /api/pelunasan/utang/${nomorNota} succeeded. Updated with total lunas_nota: ${totalLunasBaru}.`
+    );
     return NextResponse.json({
       message: "Pelunasan data updated successfully",
     });
   } catch (error) {
-    console.error("Error updating pelunasan data:", error);
+    logger.error(
+      `PUT /api/pelunasan/utang/[nomornota] failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Internal Server Error",
@@ -200,11 +215,18 @@ export async function DELETE(
       });
     });
 
+    logger.info(
+      `DELETE /api/pelunasan/utang/${nomorNota} succeeded. Payments deleted.`
+    );
     return NextResponse.json({
       message: "Pelunasan data deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting pelunasan data:", error);
+    logger.error(
+      `DELETE /api/pelunasan/utang/[nomornota] failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Internal Server Error",

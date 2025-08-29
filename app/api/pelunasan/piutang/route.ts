@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { PelunasanDTO } from "@/lib/types";
 import { validate } from "@/lib/zod";
@@ -81,12 +82,19 @@ export async function POST(request: NextRequest) {
       });
     });
 
+    logger.info(
+      `POST /api/pelunasan/piutang succeeded. Created payments for client ${validatedData.namaClient}.`
+    );
     return NextResponse.json(
       { message: "Pelunasan berhasil diproses" },
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error processing pelunasan:", error);
+    logger.error(
+      `POST /api/pelunasan/piutang failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Internal Server Error",

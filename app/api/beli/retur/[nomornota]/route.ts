@@ -1,4 +1,5 @@
 import { NotaI } from "@/hooks/useReturStore";
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
@@ -30,6 +31,9 @@ export async function GET(
       },
     });
 
+    logger.info(
+      `GET /api/beli/retur/${nomorNota} succeeded. Found ${data.length} items.`
+    );
     return NextResponse.json({
       data: data.map((item) => {
         const totalRetur = item.bretur.reduce(
@@ -49,7 +53,11 @@ export async function GET(
       }),
     });
   } catch (error) {
-    console.error("Error fetching retur data:", error);
+    logger.error(
+      `GET /api/beli/retur/[nomornota] failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }
@@ -212,9 +220,16 @@ export async function PUT(
       });
     });
 
+    logger.info(
+      `PUT /api/beli/retur/${nomorNota} succeeded. Retur data updated.`
+    );
     return NextResponse.json({ message: "Retur updated successfully" });
   } catch (error) {
-    console.error("Error updating retur data:", error);
+    logger.error(
+      `PUT /api/beli/retur/[nomornota] failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error" },
       { status: 500 }

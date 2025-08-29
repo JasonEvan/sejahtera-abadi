@@ -1,4 +1,5 @@
 import { formatDate } from "@/lib/formatter";
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { DetailTransaksiTableRow } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
@@ -22,6 +23,7 @@ export async function GET(request: NextRequest) {
   const nomorNota = request.nextUrl.searchParams.get("nomornota");
 
   if (!nomorNota) {
+    logger.warn(`GET /api/nota/penjualan/lihat failed: Missing nomornota`);
     return NextResponse.json(
       { error: "Nomor nota is required" },
       { status: 400 }
@@ -86,12 +88,19 @@ export async function GET(request: NextRequest) {
       return acc;
     }, initialState);
 
+    logger.info(
+      `GET /api/nota/penjualan/lihat succeeded. Found ${results.length} items for nomornota=${nomorNota}.`
+    );
     return NextResponse.json({
       data: processedData.tableRows,
       totalHargaSemua: processedData.totalHargaSemua.toLocaleString("id-ID"),
     });
   } catch (error) {
-    console.error("Error fetching detail penjualan:", error);
+    logger.error(
+      `GET /api/nota/penjualan/lihat failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error:

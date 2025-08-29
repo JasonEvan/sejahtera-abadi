@@ -47,7 +47,11 @@ export default function NotaPembelianPage() {
       <Typography variant="h6" gutterBottom>
         Nota Pembelian
       </Typography>
-      <FormNota handleSubmit={handleSubmit} handleError={handleError} />
+      <FormNota
+        handleSubmit={handleSubmit}
+        handleError={handleError}
+        setNomorNota={() => {}}
+      />
       <NotaTable data={data} totalHargaSemua={total} />
     </Box>
   );

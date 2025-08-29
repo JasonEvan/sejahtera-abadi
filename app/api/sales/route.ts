@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
@@ -24,11 +25,12 @@ export async function GET(request: NextRequest) {
         : undefined),
     });
 
-    return NextResponse.json(
-      { data: salesmen },
-      { headers: { "Content-Type": "application/json" } }
-    );
+    logger.info(`GET /api/sales succeeded. Found ${salesmen.length} items.`);
+    return NextResponse.json({ data: salesmen });
   } catch (error) {
+    logger.error(
+      `GET /api/sales failed: ${error instanceof Error ? error.message : error}`
+    );
     return NextResponse.json(
       {
         error:
@@ -36,7 +38,7 @@ export async function GET(request: NextRequest) {
             ? error.message
             : "An unexpected error occurred",
       },
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500 }
     );
   }
 }
@@ -64,16 +66,22 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    logger.info(`POST /api/sales succeeded. Salesman added.`);
     return NextResponse.json(
       { message: "Salesman added successfully" },
-      { status: 201, headers: { "Content-Type": "application/json" } }
+      { status: 201 }
     );
   } catch (error) {
+    logger.error(
+      `POST /api/sales failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Internal Server Error",
       },
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500 }
     );
   }
 }

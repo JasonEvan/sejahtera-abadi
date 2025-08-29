@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -32,9 +33,14 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    logger.info(`GET /api/beli/history succeeded. Found ${data.length} items.`);
     return NextResponse.json({ data }, { status: 200 });
   } catch (error) {
-    console.log("Error fetching jual history:", error);
+    logger.error(
+      `GET /api/beli/history failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Unknown error",
