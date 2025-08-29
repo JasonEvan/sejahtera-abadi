@@ -191,7 +191,6 @@ export const useEditReturJualStore = create<EditReturStore>((set, get) => ({
   resetAll: () => {
     set({
       nomorNota: "",
-      nomorNotaOption: [],
       nomorNotaLoading: false,
       nomorNotaDone: false,
 
@@ -365,7 +364,6 @@ export const useEditReturBeliStore = create<EditReturStore>((set, get) => ({
   resetAll: () => {
     set({
       nomorNota: "",
-      nomorNotaOption: [],
       nomorNotaLoading: false,
       nomorNotaDone: false,
 
