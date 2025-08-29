@@ -36,11 +36,12 @@ export default function ClientInformation({
     tanggal: Yup.date().required("Tanggal is required"),
   });
 
+  const today: string = new Date().toISOString().split("T")[0];
   const formik = useFormik({
     initialValues: {
       namaclient: "",
       nomortransaksi: "",
-      tanggal: "",
+      tanggal: today,
     },
     validationSchema,
     onSubmit: (values) => {

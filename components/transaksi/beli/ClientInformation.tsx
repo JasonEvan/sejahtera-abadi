@@ -32,6 +32,7 @@ export default function ClientInformation() {
     tanggal: Yup.date().required("Tanggal is required"),
   });
 
+  const today: string = new Date().toISOString().split("T")[0];
   const formik = useFormik({
     initialValues: {
       namaclient:
@@ -39,7 +40,7 @@ export default function ClientInformation() {
           ? `${namaClientStore}/${kotaClientStore}`
           : namaClientStore) || "",
       nomornota: nomorNotaStore || "",
-      tanggal: tanggalNotaStore || "",
+      tanggal: tanggalNotaStore || today,
     },
     validationSchema,
     onSubmit: (values) => {
