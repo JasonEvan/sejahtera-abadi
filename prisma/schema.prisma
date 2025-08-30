@@ -10,7 +10,7 @@ datasource db {
 }
 
 model beli {
-  tipe         String   @default("B") @db.Char(2)
+  tipe         String   @default("B") @db.VarChar(2)
   id           Int      @id @default(autoincrement())
   id_client    Int
   nomor_nota   String   @db.VarChar(10)
@@ -57,7 +57,7 @@ model bnota {
 }
 
 model bretur {
-  tipe          String    @default("BR") @db.Char(3)
+  tipe          String    @default("BR") @db.VarChar(3)
   id            Int       @id @default(autoincrement())
   id_client     Int
   id_beli       Int
@@ -129,7 +129,7 @@ model jnota {
 }
 
 model jretur {
-  tipe          String    @default("JR") @db.Char(3)
+  tipe          String    @default("JR") @db.VarChar(3)
   id            Int       @id @default(autoincrement())
   id_client     Int
   id_jual       Int
@@ -149,7 +149,7 @@ model jretur {
 }
 
 model jual {
-  tipe         String   @default("J") @db.Char(2)
+  tipe         String   @default("J") @db.VarChar(2)
   id           Int      @id @default(autoincrement())
   id_client    Int
   nomor_nota   String   @db.VarChar(10)
