@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
         (SELECT DISTINCT nomor_nota, nama_sales FROM jual) AS jual_info ON jn.nomor_nota = jual_info.nomor_nota
       WHERE
         -- Filter berdasarkan bulan dan tahun dari tabel 'jnota'
-        YEAR(jn.tanggal_nota) = ${year} AND MONTH(jn.tanggal_nota) = ${month}
+        EXTRACT(YEAR FROM jn.tanggal_nota) = ${year} AND EXTRACT(MONTH FROM jn.tanggal_nota) = ${month}
         AND jual_info.nama_sales IS NOT NULL
       ORDER BY
         jual_info.nama_sales, jn.tanggal_nota;
