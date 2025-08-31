@@ -15,6 +15,7 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "next/navigation";
+import Swal from "sweetalert2";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -25,11 +26,9 @@ export default function LoginPage() {
   const validationSchema = Yup.object({
     email: Yup.string()
       .email("Invalid email format")
-      .required("Email is required")
-      .oneOf(["sejahteraabadi@gmail.com"], "Email salah"),
+      .required("Email is required"),
     password: Yup.string()
       .min(8, "Password must be at least 8 characters")
-      .oneOf(["11223344"], "Password salah")
       .required("Password is required"),
   });
 
@@ -41,8 +40,34 @@ export default function LoginPage() {
       password: "",
     },
     validationSchema,
-    onSubmit: () => {
-      router.replace("/dashboard");
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        setSubmitting(true);
+        const response = await fetch("/api/auth/login", {
+          cache: "no-store",
+          method: "POST",
+          body: JSON.stringify(values),
+        });
+
+        if (!response.ok) {
+          const { error } = await response.json();
+          throw new Error(error || "Something went wrong");
+        }
+
+        router.replace("/dashboard");
+      } catch (error) {
+        Swal.fire({
+          icon: "error",
+          title: "Login Failed",
+          text:
+            error instanceof Error
+              ? error.message
+              : "An unexpected error occurred",
+          confirmButtonText: "OK",
+        });
+      } finally {
+        setSubmitting(false);
+      }
     },
   });
 
@@ -121,7 +146,11 @@ export default function LoginPage() {
               },
             }}
           />
-          <Button variant="contained" type="submit">
+          <Button
+            variant="contained"
+            type="submit"
+            loading={formik.isSubmitting}
+          >
             Sign In
           </Button>
         </form>
