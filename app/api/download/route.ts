@@ -32,6 +32,11 @@ export async function GET() {
     return `INSERT INTO ${table} (${cols}) VALUES\n${values};\n\n`;
   }
 
+  // Helper function for making Setval SQL statements
+  function makeSetval(table: string, idColumn: string = "id"): string {
+    return `SELECT setval(pg_get_serial_sequence('"${table}"', '${idColumn}'), COALESCE((SELECT MAX(${idColumn}) FROM "${table}"), 0) + 1, false);\n`;
+  }
+
   try {
     const prisma = PrismaService.getInstance();
 
@@ -78,6 +83,20 @@ export async function GET() {
     // Get jretur
     const jretur = await prisma.jretur.findMany();
     sqlDump += makeInsert("jretur", jretur);
+
+    // Tambahkan setval untuk semua tabel yang punya auto increment
+    sqlDump += "\n-- Reset sequences\n";
+    sqlDump += makeSetval("client");
+    sqlDump += makeSetval("salesman");
+    sqlDump += makeSetval("stock");
+    sqlDump += makeSetval("bnota");
+    sqlDump += makeSetval("jnota");
+    sqlDump += makeSetval("beli");
+    sqlDump += makeSetval("jual");
+    sqlDump += makeSetval("blunas");
+    sqlDump += makeSetval("jlunas");
+    sqlDump += makeSetval("bretur");
+    sqlDump += makeSetval("jretur");
 
     logger.info("GET /api/download succeeded.");
     return new NextResponse(sqlDump, {
