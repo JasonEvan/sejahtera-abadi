@@ -8,7 +8,7 @@ export default function Download() {
   const handleClick = async () => {
     try {
       setIsLoading(true);
-      const response = await fetch("/api/download", {
+      const response = await fetch("/api/backup", {
         cache: "no-store",
       });
 

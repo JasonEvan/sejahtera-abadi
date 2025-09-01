@@ -1,6 +1,6 @@
 import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
   let sqlDump = "";
@@ -108,6 +108,63 @@ export async function GET() {
   } catch (error) {
     logger.error(
       `GET /api/download failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const formData = await request.formData();
+    const file: File | null = formData.get("file") as File;
+
+    if (!file) {
+      logger.warn("POST /api/backup failed: No file uploaded.");
+      return NextResponse.json({ error: "File wajib diisi." }, { status: 400 });
+    }
+
+    if (!file.name.endsWith(".sql")) {
+      logger.warn("POST /api/backup failed: Invalid file type.");
+      return NextResponse.json(
+        { error: "Hanya file SQL yang diperbolehkan." },
+        { status: 400 }
+      );
+    }
+
+    const bytes = await file.arrayBuffer();
+    const buffer = Buffer.from(bytes);
+
+    const sqlContent = buffer.toString("utf-8");
+    const queries = sqlContent
+      .split(/;\s*\n/)
+      .map((query) => query.trim())
+      .filter((query) => query.length > 0);
+
+    const prisma = PrismaService.getInstance();
+    await prisma.$transaction(async (tx) => {
+      // Clear existing data
+      await tx.$executeRaw`TRUNCATE TABLE client, salesman, stock, bnota, jnota, beli, jual, blunas, jlunas, bretur, jretur RESTART IDENTITY CASCADE;`;
+
+      // Execute query
+      for (const query of queries) {
+        await tx.$executeRawUnsafe(query);
+      }
+    });
+
+    logger.info(
+      `POST /api/backup succeeded. Executed ${queries.length} queries.`
+    );
+    return NextResponse.json({ message: "Restore berhasil." });
+  } catch (error) {
+    logger.error(
+      `POST /api/backup failed: ${
         error instanceof Error ? error.message : error
       }`
     );
