@@ -112,25 +112,19 @@ export async function POST(request: NextRequest) {
         data: mappedData,
       });
 
-      for (const item of validatedData.dataPenjualan) {
-        // Decrement stock and increment qty_out
-        await tx.stock.update({
-          where: {
-            nama_barang: item.namaBarang,
-          },
+      // Update stock and qty_out
+      const stockUpdatePromises = validatedData.dataPenjualan.map((item) =>
+        tx.stock.update({
+          where: { nama_barang: item.namaBarang },
           data: {
-            stock_akhir: {
-              decrement: item.jumlah,
-            },
-            qty_out: {
-              increment: item.jumlah,
-            },
+            stock_akhir: { decrement: item.jumlah },
+            qty_out: { increment: item.jumlah },
           },
-        });
-      }
+        })
+      );
 
       // Increment note number on sales table
-      await tx.salesman.update({
+      const salesmanUpdatePromise = tx.salesman.update({
         where: {
           nama_sales: validatedData.namaSales,
         },
@@ -142,7 +136,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Increment sldakhir_piutang on client table
-      await tx.client.update({
+      const clientUpdatePromise = tx.client.update({
         where: {
           id: client.id,
         },
@@ -152,12 +146,18 @@ export async function POST(request: NextRequest) {
           },
         },
       });
+
+      await Promise.all([
+        ...stockUpdatePromises,
+        salesmanUpdatePromise,
+        clientUpdatePromise,
+      ]);
     });
 
     logger.info(`POST /api/jual succeeded. Jual processed.`);
     return NextResponse.json(
       { message: "Data successfully saved" },
-      { status: 201, headers: { "Content-Type": "application/json" } }
+      { status: 201 }
     );
   } catch (error) {
     logger.error(
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
     );
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "An error occurred" },
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500 }
     );
   }
 }
