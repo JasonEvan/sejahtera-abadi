@@ -77,44 +77,50 @@ export async function POST(request: NextRequest) {
         throw new Error("Client not found");
       }
 
-      let totalLunas = 0;
-      for (const item of validatedData.dataPelunasan) {
-        totalLunas += item.lunasNota;
+      // Count total lunas
+      const totalLunas = validatedData.dataPelunasan.reduce(
+        (acc, curr) => acc + curr.lunasNota,
+        0
+      );
 
-        // Update lunas_nota and saldo_nota di bnota
-        await tx.bnota.update({
+      // Insert to blunas
+      const tanggalLunasDate = new Date(validatedData.tanggal);
+      const mappedPelunasanData = validatedData.dataPelunasan.map((item) => ({
+        nomor_transaksi: validatedData.nomorTransaksi,
+        tanggal_lunas: tanggalLunasDate,
+        nomor_nota: item.nomorNota,
+        lunas_nota: item.lunasNota,
+        id_client: client.id,
+      }));
+
+      const blunasCreatePromise = tx.blunas.createMany({
+        data: mappedPelunasanData,
+      });
+
+      // Update lunas_nota and saldo_nota on bnota
+      const bnotaUpdatePromises = validatedData.dataPelunasan.map((item) =>
+        tx.bnota.update({
           where: { nomor_nota: item.nomorNota },
           data: {
-            lunas_nota: {
-              increment: item.lunasNota,
-            },
-            saldo_nota: {
-              decrement: item.lunasNota,
-            },
+            lunas_nota: { increment: item.lunasNota },
+            saldo_nota: { decrement: item.lunasNota },
           },
-        });
+        })
+      );
 
-        // insert ke blunas
-        await tx.blunas.create({
-          data: {
-            nomor_transaksi: validatedData.nomorTransaksi,
-            tanggal_lunas: new Date(validatedData.tanggal),
-            nomor_nota: item.nomorNota,
-            lunas_nota: item.lunasNota,
-            id_client: client.id,
-          },
-        });
-      }
-
-      // update sldakhir_utang di client
-      await tx.client.update({
+      // Update sldakhir_utang on client
+      const clientUpdatePromise = tx.client.update({
         where: { id: client.id },
         data: {
-          sldakhir_utang: {
-            decrement: totalLunas,
-          },
+          sldakhir_utang: { decrement: totalLunas },
         },
       });
+
+      await Promise.all([
+        blunasCreatePromise,
+        clientUpdatePromise,
+        ...bnotaUpdatePromises,
+      ]);
     });
 
     logger.info(
