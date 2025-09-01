@@ -25,17 +25,14 @@ export async function GET(request: NextRequest) {
     });
 
     logger.info(`GET /api/beli succeeded. Found ${data.length} items.`);
-    return NextResponse.json(
-      { data },
-      { status: 200, headers: { "Content-Type": "application/json" } }
-    );
+    return NextResponse.json({ data }, { status: 200 });
   } catch (error) {
     logger.error(
       `GET /api/beli failed: ${error instanceof Error ? error.message : error}`
     );
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "An error occurred" },
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500 }
     );
   }
 }
@@ -115,34 +112,26 @@ export async function POST(request: NextRequest) {
       });
 
       // Increment stock_akhir, Increment qty_in, Update harga_barang (harga beli)
-      for (const item of validatedData.dataPembelian) {
-        await tx.stock.update({
-          where: {
-            nama_barang: item.namaBarang,
-          },
+      const stockUpdatePromises = validatedData.dataPembelian.map((item) =>
+        tx.stock.update({
+          where: { nama_barang: item.namaBarang },
           data: {
-            stock_akhir: {
-              increment: item.jumlah,
-            },
-            qty_in: {
-              increment: item.jumlah,
-            },
+            stock_akhir: { increment: item.jumlah },
+            qty_in: { increment: item.jumlah },
             harga_barang: item.hargaBeli,
           },
-        });
-      }
+        })
+      );
 
       // Increment sldakhir_utang on client table
-      await tx.client.update({
-        where: {
-          id: client.id,
-        },
+      const clientUpdatePromise = tx.client.update({
+        where: { id: client.id },
         data: {
-          sldakhir_utang: {
-            increment: validatedData.totalAkhir,
-          },
+          sldakhir_utang: { increment: validatedData.totalAkhir },
         },
       });
+
+      await Promise.all([...stockUpdatePromises, clientUpdatePromise]);
     });
 
     logger.info(`POST /api/beli succeeded. New beli data created.`);
