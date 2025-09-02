@@ -176,7 +176,7 @@ export async function PUT(request: NextRequest) {
 
     const prisma = PrismaService.getInstance();
     await prisma.$transaction(async (tx) => {
-      // [0] validate if nomorNota exists in bretur
+      // [1] validate if nomorNota exists in bretur
       const bretur = await tx.bretur.findFirst({
         where: {
           nomor_nota: validatedData.nomorNota,
@@ -189,69 +189,58 @@ export async function PUT(request: NextRequest) {
         );
       }
 
-      // [1] Get client ID and Get tanggal_nota on beli and old nilai nota
-      const client = await tx.client.findUniqueOrThrow({
-        where: {
-          nama_client_kota_client: {
-            nama_client: validatedData.namaClient,
-            kota_client: validatedData.kotaClient,
+      // [2] Get client ID and Get tanggal_nota on beli and old nilai nota
+      const [client, oldBeli, oldBnota] = await Promise.all([
+        tx.client.findUniqueOrThrow({
+          where: {
+            nama_client_kota_client: {
+              nama_client: validatedData.namaClient,
+              kota_client: validatedData.kotaClient,
+            },
           },
-        },
-      });
-
-      const oldBeli = await tx.beli.findMany({
-        where: {
-          nomor_nota: validatedData.nomorNota,
-        },
-        select: {
-          tanggal_nota: true,
-          qty_barang: true,
-          nama_barang: true,
-        },
-      });
+        }),
+        tx.beli.findMany({
+          where: {
+            nomor_nota: validatedData.nomorNota,
+          },
+          select: {
+            tanggal_nota: true,
+            qty_barang: true,
+            nama_barang: true,
+          },
+        }),
+        tx.bnota.findUniqueOrThrow({
+          where: {
+            nomor_nota: validatedData.nomorNota,
+          },
+          select: { nilai_nota: true },
+        }),
+      ]);
 
       if (oldBeli.length < 1) {
         throw new Error("Beli not found with the provided nomor_nota");
       }
 
-      const tanggalNota = oldBeli[0].tanggal_nota;
-
-      const oldBnota = await tx.bnota.findUniqueOrThrow({
-        where: {
-          nomor_nota: validatedData.nomorNota,
-        },
-        select: {
-          nilai_nota: true,
-        },
-      });
-
-      // [2] Update stock and qty_in for old beli data in parallel
-      await Promise.all(
-        oldBeli.map((item) =>
-          tx.stock.update({
-            where: {
-              nama_barang: item.nama_barang,
-            },
-            data: {
-              stock_akhir: {
-                decrement: item.qty_barang,
-              },
-              qty_in: {
-                decrement: item.qty_barang,
-              },
-            },
-          })
-        )
+      // [3] Update stock and qty_in for old beli data in parallel
+      const oldStockUpdatePromises = oldBeli.map((item) =>
+        tx.stock.update({
+          where: { nama_barang: item.nama_barang },
+          data: {
+            stock_akhir: { decrement: item.qty_barang },
+            qty_in: { decrement: item.qty_barang },
+          },
+        })
       );
 
-      // [3] Delete old beli data
-      await tx.beli.deleteMany({
-        where: {
-          nomor_nota: validatedData.nomorNota,
-        },
+      // [4] Delete old beli data
+      const beliDeletePromise = tx.beli.deleteMany({
+        where: { nomor_nota: validatedData.nomorNota },
       });
 
-      // [4] Insert new beli data
+      await Promise.all([...oldStockUpdatePromises, beliDeletePromise]);
+
+      // [5] Insert new beli data
+      const tanggalNota = oldBeli[0].tanggal_nota;
       const mappedDataPembelian = validatedData.dataNota.map((item) => ({
         nomor_nota: validatedData.nomorNota,
         tanggal_nota: tanggalNota,
@@ -263,30 +252,23 @@ export async function PUT(request: NextRequest) {
         id_client: client.id,
       }));
 
-      await tx.beli.createMany({
+      const beliCreatePromise = tx.beli.createMany({
         data: mappedDataPembelian,
       });
 
-      await Promise.all(
-        validatedData.dataNota.map((item) =>
-          tx.stock.update({
-            where: {
-              nama_barang: item.nama_barang,
-            },
-            data: {
-              stock_akhir: {
-                increment: item.qty_barang,
-              },
-              qty_in: {
-                increment: item.qty_barang,
-              },
-            },
-          })
-        )
+      // [6] Update stock and qty_in for new beli data
+      const newStockUpdatePromises = validatedData.dataNota.map((item) =>
+        tx.stock.update({
+          where: { nama_barang: item.nama_barang },
+          data: {
+            stock_akhir: { increment: item.qty_barang },
+            qty_in: { increment: item.qty_barang },
+          },
+        })
       );
 
-      // [5] Update diskon, nilaiNota, and saldoNota on bnota with new data
-      await tx.bnota.update({
+      // [7] Update diskon, nilaiNota, and saldoNota on bnota with new data
+      const bnotaUpdatePromise = tx.bnota.update({
         where: {
           nomor_nota: validatedData.nomorNota,
         },
@@ -297,17 +279,22 @@ export async function PUT(request: NextRequest) {
         },
       });
 
-      // [6] Subtract sldakhir_utang and add new totalAkhir on client
-      await tx.client.update({
-        where: {
-          id: client.id,
-        },
+      // [8] Subtract sldakhir_utang and add new totalAkhir on client
+      const clientUpdatePromise = tx.client.update({
+        where: { id: client.id },
         data: {
           sldakhir_utang: {
             increment: validatedData.totalAkhir - oldBnota.nilai_nota,
           },
         },
       });
+
+      await Promise.all([
+        beliCreatePromise,
+        ...newStockUpdatePromises,
+        bnotaUpdatePromise,
+        clientUpdatePromise,
+      ]);
     });
 
     logger.info("PUT /api/beli succeeded. Beli data updated.");
