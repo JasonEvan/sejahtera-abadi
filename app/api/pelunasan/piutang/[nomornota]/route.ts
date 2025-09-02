@@ -110,12 +110,12 @@ export async function PUT(
         };
       });
 
-      await tx.jlunas.createMany({
+      const jlunasCreatePromise = tx.jlunas.createMany({
         data: mappedData,
       });
 
       // Update jnota
-      await tx.jnota.update({
+      const jnotaUpdatePromise = tx.jnota.update({
         where: { nomor_nota: nomorNota },
         data: {
           lunas_nota: totalLunasBaru,
@@ -124,7 +124,7 @@ export async function PUT(
       });
 
       // Update client
-      await tx.client.update({
+      const clientUpdatePromise = tx.client.update({
         where: {
           id: nota.id_client,
         },
@@ -134,6 +134,12 @@ export async function PUT(
           },
         },
       });
+
+      await Promise.all([
+        jlunasCreatePromise,
+        jnotaUpdatePromise,
+        clientUpdatePromise,
+      ]);
     });
 
     logger.info(
@@ -182,7 +188,7 @@ export async function DELETE(
       );
 
       // Delete pelunasan records
-      await tx.jlunas.deleteMany({
+      const jlunasDeletePromise = tx.jlunas.deleteMany({
         where: { nomor_nota: nomorNota },
       });
 
@@ -190,20 +196,14 @@ export async function DELETE(
       const updatedNota = await tx.jnota.update({
         where: { nomor_nota: nomorNota },
         data: {
-          lunas_nota: {
-            decrement: totalDeletedAmount,
-          },
-          saldo_nota: {
-            increment: totalDeletedAmount,
-          },
+          lunas_nota: { decrement: totalDeletedAmount },
+          saldo_nota: { increment: totalDeletedAmount },
         },
-        select: {
-          id_client: true,
-        },
+        select: { id_client: true },
       });
 
       // Update client
-      await tx.client.update({
+      const clientUpdatePromise = tx.client.update({
         where: {
           id: updatedNota.id_client,
         },
@@ -213,6 +213,8 @@ export async function DELETE(
           },
         },
       });
+
+      await Promise.all([jlunasDeletePromise, clientUpdatePromise]);
     });
 
     logger.info(

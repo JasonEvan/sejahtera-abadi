@@ -112,25 +112,19 @@ export async function POST(request: NextRequest) {
         data: mappedData,
       });
 
-      for (const item of validatedData.dataPenjualan) {
-        // Decrement stock and increment qty_out
-        await tx.stock.update({
-          where: {
-            nama_barang: item.namaBarang,
-          },
+      // Update stock and qty_out
+      const stockUpdatePromises = validatedData.dataPenjualan.map((item) =>
+        tx.stock.update({
+          where: { nama_barang: item.namaBarang },
           data: {
-            stock_akhir: {
-              decrement: item.jumlah,
-            },
-            qty_out: {
-              increment: item.jumlah,
-            },
+            stock_akhir: { decrement: item.jumlah },
+            qty_out: { increment: item.jumlah },
           },
-        });
-      }
+        })
+      );
 
       // Increment note number on sales table
-      await tx.salesman.update({
+      const salesmanUpdatePromise = tx.salesman.update({
         where: {
           nama_sales: validatedData.namaSales,
         },
@@ -142,7 +136,7 @@ export async function POST(request: NextRequest) {
       });
 
       // Increment sldakhir_piutang on client table
-      await tx.client.update({
+      const clientUpdatePromise = tx.client.update({
         where: {
           id: client.id,
         },
@@ -152,12 +146,18 @@ export async function POST(request: NextRequest) {
           },
         },
       });
+
+      await Promise.all([
+        ...stockUpdatePromises,
+        salesmanUpdatePromise,
+        clientUpdatePromise,
+      ]);
     });
 
     logger.info(`POST /api/jual succeeded. Jual processed.`);
     return NextResponse.json(
       { message: "Data successfully saved" },
-      { status: 201, headers: { "Content-Type": "application/json" } }
+      { status: 201 }
     );
   } catch (error) {
     logger.error(
@@ -165,7 +165,7 @@ export async function POST(request: NextRequest) {
     );
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "An error occurred" },
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500 }
     );
   }
 }
@@ -196,7 +196,7 @@ export async function PUT(request: NextRequest) {
 
     const prisma = PrismaService.getInstance();
     await prisma.$transaction(async (tx) => {
-      // [0] validate if nomorNota exists in jretur
+      // [1] validate if nomorNota exists in jretur
       const jretur = await tx.jretur.findFirst({
         where: {
           nomor_nota: validatedData.nomorNota,
@@ -209,71 +209,63 @@ export async function PUT(request: NextRequest) {
         );
       }
 
-      // [1] Get client ID and Get tanggal_nota and salesman on jual and old nilai nota
-      const client = await tx.client.findUniqueOrThrow({
-        where: {
-          nama_client_kota_client: {
-            nama_client: validatedData.namaClient,
-            kota_client: validatedData.kotaClient,
+      // [2] Get client ID and Get tanggal_nota and salesman on jual and old nilai nota
+      const [client, oldJual, oldJnota] = await Promise.all([
+        tx.client.findUniqueOrThrow({
+          where: {
+            nama_client_kota_client: {
+              nama_client: validatedData.namaClient,
+              kota_client: validatedData.kotaClient,
+            },
           },
-        },
-      });
-
-      const oldJual = await tx.jual.findMany({
-        where: {
-          nomor_nota: validatedData.nomorNota,
-        },
-        select: {
-          tanggal_nota: true,
-          nama_sales: true,
-          qty_barang: true,
-          nama_barang: true,
-        },
-      });
+        }),
+        tx.jual.findMany({
+          where: {
+            nomor_nota: validatedData.nomorNota,
+          },
+          select: {
+            tanggal_nota: true,
+            nama_sales: true,
+            qty_barang: true,
+            nama_barang: true,
+          },
+        }),
+        tx.jnota.findUniqueOrThrow({
+          where: {
+            nomor_nota: validatedData.nomorNota,
+          },
+          select: { nilai_nota: true },
+        }),
+      ]);
 
       if (oldJual.length < 1) {
         throw new Error("Jual not found with the provided nomor_nota");
       }
 
+      // [3] Update stock and qty_out for reversal old jual data
+      const oldStockUpdatePromises = oldJual.map((item) =>
+        tx.stock.update({
+          where: { nama_barang: item.nama_barang },
+          data: {
+            stock_akhir: { increment: item.qty_barang },
+            qty_out: { decrement: item.qty_barang },
+          },
+        })
+      );
+
+      // [4] Delete old jual data
+      const jualDeletePromise = tx.jual.deleteMany({
+        where: {
+          nomor_nota: validatedData.nomorNota,
+        },
+      });
+
+      await Promise.all([...oldStockUpdatePromises, jualDeletePromise]);
+
+      // [5] Insert new jual data
       const tanggalNota = oldJual[0].tanggal_nota;
       const namaSales = oldJual[0].nama_sales;
 
-      const oldJnota = await tx.jnota.findUniqueOrThrow({
-        where: {
-          nomor_nota: validatedData.nomorNota,
-        },
-        select: {
-          nilai_nota: true,
-        },
-      });
-
-      // [2] Update stock and qty_out for old jual data in parallel
-      await Promise.all(
-        oldJual.map((item) =>
-          tx.stock.update({
-            where: {
-              nama_barang: item.nama_barang,
-            },
-            data: {
-              stock_akhir: {
-                increment: item.qty_barang,
-              },
-              qty_out: {
-                decrement: item.qty_barang,
-              },
-            },
-          })
-        )
-      );
-
-      // [3] Delete old jual data
-      await tx.jual.deleteMany({
-        where: {
-          nomor_nota: validatedData.nomorNota,
-        },
-      });
-
-      // [4] Insert new jual data
       const mappedDataPenjualan = validatedData.dataNota.map((item) => ({
         nomor_nota: validatedData.nomorNota,
         tanggal_nota: tanggalNota,
@@ -286,30 +278,23 @@ export async function PUT(request: NextRequest) {
         nama_sales: namaSales,
       }));
 
-      await tx.jual.createMany({
+      const jualCreatePromise = tx.jual.createMany({
         data: mappedDataPenjualan,
       });
 
-      await Promise.all(
-        validatedData.dataNota.map((item) =>
-          tx.stock.update({
-            where: {
-              nama_barang: item.nama_barang,
-            },
-            data: {
-              stock_akhir: {
-                decrement: item.qty_barang,
-              },
-              qty_out: {
-                increment: item.qty_barang,
-              },
-            },
-          })
-        )
+      // [6] Update stock and qty_out for new jual data
+      const newStockUpdatePromises = validatedData.dataNota.map((item) =>
+        tx.stock.update({
+          where: { nama_barang: item.nama_barang },
+          data: {
+            stock_akhir: { decrement: item.qty_barang },
+            qty_out: { increment: item.qty_barang },
+          },
+        })
       );
 
-      // [5] Update diskon, nilaiNota, and saldoNota on jnota with new data
-      await tx.jnota.update({
+      // [7] Update diskon, nilaiNota, and saldoNota on jnota with new data
+      const jnotaUpdatePromise = tx.jnota.update({
         where: {
           nomor_nota: validatedData.nomorNota,
         },
@@ -320,17 +305,22 @@ export async function PUT(request: NextRequest) {
         },
       });
 
-      // [6] Subtract sldakhir_piutang and add new totalAkhir on client
-      await tx.client.update({
-        where: {
-          id: client.id,
-        },
+      // [8] Subtract sldakhir_piutang and add new totalAkhir on client
+      const clientUpdatePromise = tx.client.update({
+        where: { id: client.id },
         data: {
           sldakhir_piutang: {
             increment: validatedData.totalAkhir - oldJnota.nilai_nota,
           },
         },
       });
+
+      await Promise.all([
+        jualCreatePromise,
+        ...newStockUpdatePromises,
+        jnotaUpdatePromise,
+        clientUpdatePromise,
+      ]);
     });
 
     logger.info(`PUT /api/jual succeeded. Jual updated.`);

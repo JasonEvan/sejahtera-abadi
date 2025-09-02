@@ -42,44 +42,50 @@ export async function POST(request: NextRequest) {
         throw new Error("Client not found");
       }
 
-      let totalLunas = 0;
-      for (const item of validatedData.dataPelunasan) {
-        totalLunas += item.lunasNota;
+      // Count total lunas
+      const totalLunas = validatedData.dataPelunasan.reduce(
+        (acc, curr) => acc + curr.lunasNota,
+        0
+      );
 
-        // Update lunas_nota and saldo_nota di jnota
-        await tx.jnota.update({
+      // Insert to jlunas
+      const tanggalLunasDate = new Date(validatedData.tanggal);
+      const mappedPelunasanData = validatedData.dataPelunasan.map((item) => ({
+        nomor_transaksi: validatedData.nomorTransaksi,
+        tanggal_lunas: tanggalLunasDate,
+        nomor_nota: item.nomorNota,
+        lunas_nota: item.lunasNota,
+        id_client: client.id,
+      }));
+
+      const jlunasCreatePromise = tx.jlunas.createMany({
+        data: mappedPelunasanData,
+      });
+
+      // Update lunas_nota and saldo_nota on jnota
+      const jnotaUpdatePromises = validatedData.dataPelunasan.map((item) =>
+        tx.jnota.update({
           where: { nomor_nota: item.nomorNota },
           data: {
-            lunas_nota: {
-              increment: item.lunasNota,
-            },
-            saldo_nota: {
-              decrement: item.lunasNota,
-            },
+            lunas_nota: { increment: item.lunasNota },
+            saldo_nota: { decrement: item.lunasNota },
           },
-        });
-
-        // insert ke jlunas
-        await tx.jlunas.create({
-          data: {
-            nomor_transaksi: validatedData.nomorTransaksi,
-            tanggal_lunas: new Date(validatedData.tanggal),
-            nomor_nota: item.nomorNota,
-            lunas_nota: item.lunasNota,
-            id_client: client.id,
-          },
-        });
-      }
+        })
+      );
 
       // update sldakhir_piutang di client
-      await tx.client.update({
+      const clientUpdatePromise = tx.client.update({
         where: { id: client.id },
         data: {
-          sldakhir_piutang: {
-            decrement: totalLunas,
-          },
+          sldakhir_piutang: { decrement: totalLunas },
         },
       });
+
+      await Promise.all([
+        jlunasCreatePromise,
+        clientUpdatePromise,
+        ...jnotaUpdatePromises,
+      ]);
     });
 
     logger.info(
