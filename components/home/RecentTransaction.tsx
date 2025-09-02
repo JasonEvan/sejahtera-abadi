@@ -29,7 +29,7 @@ const transactions: TransactionProps[] = [
 
 export default function RecentTransaction() {
   return (
-    <Box>
+    <Box sx={{ mb: 2 }}>
       <Typography variant="h6" gutterBottom>
         Recent Transactions
       </Typography>

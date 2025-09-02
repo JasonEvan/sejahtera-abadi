@@ -54,7 +54,7 @@ export default function TodayPerformance() {
       <Grid container spacing={2} mb={2}>
         {todayPerformanceData.map((item, index) => (
           <Grid key={index} size={{ xs: 12, sm: 6, md: 6, lg: 3 }}>
-            <Card>
+            <Card sx={{ bgcolor: "#eaeaea" }}>
               <CardContent>
                 <Stack
                   direction="row"
