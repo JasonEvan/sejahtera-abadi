@@ -1,3 +1,4 @@
+import { jual } from "@/app/generated/prisma";
 import logger from "@/lib/logger";
 import { PrismaService } from "@/lib/prisma";
 import { ReturDTO } from "@/lib/types";
@@ -69,88 +70,103 @@ export async function POST(request: NextRequest) {
 
     const validatedData = validate(body, schema);
 
+    const dataToProcess = validatedData.dataNota.filter(
+      (item) => item.retur_barang > 0
+    );
+
+    if (dataToProcess.length === 0) {
+      throw new Error("Tidak ada barang yang diretur.");
+    }
+
     const prisma = PrismaService.getInstance();
     await prisma.$transaction(async (tx) => {
-      // [1] Get Client ID
-      const client = await tx.client.findUnique({
-        where: {
-          nama_client_kota_client: {
-            nama_client: validatedData.namaClient,
-            kota_client: validatedData.kotaClient,
+      // [1] Get Client ID and data nota lama
+      const jualIds = dataToProcess.map((item) => item.id);
+      const [client, notaLama, jualAsli] = await Promise.all([
+        tx.client.findUnique({
+          where: {
+            nama_client_kota_client: {
+              nama_client: validatedData.namaClient,
+              kota_client: validatedData.kotaClient,
+            },
           },
-        },
-      });
+        }),
+        tx.jnota.findFirst({
+          where: { nomor_nota: validatedData.nomorNota },
+          select: {
+            tanggal_nota: true,
+            nilai_nota: true,
+          },
+        }),
+        tx.jual.findMany({
+          where: { id: { in: jualIds } },
+        }),
+      ]);
 
       if (!client) throw new Error("Client not found");
-
-      // [2] Get data nota lama
-      const notaLama = await tx.jnota.findFirst({
-        where: {
-          nomor_nota: validatedData.nomorNota,
-        },
-        select: {
-          tanggal_nota: true,
-          nilai_nota: true,
-        },
-      });
-
       if (!notaLama) throw new Error("Nota not found");
 
-      // [3] Proses retur untuk setiap item
-      for (const item of validatedData.dataNota) {
-        if (item.retur_barang > 0) {
-          // [3a] Dapatkan record jual asli
-          const jualAsli = await tx.jual.findUnique({
-            where: { id: item.id },
-            select: { qty_barang: true, harga_barang: true, nama_sales: true },
-          });
+      // [2] Validation and preparation
+      const jualAsliMap = new Map<number, jual>(
+        jualAsli.map((item) => [item.id, item])
+      );
 
-          if (!jualAsli)
-            throw new Error(`Record jual dengan ID ${item.id} tidak ditemukan`);
+      for (const item of dataToProcess) {
+        const originalJual = jualAsliMap.get(item.id);
+        if (!originalJual) {
+          throw new Error(`Record jual dengan ID ${item.id} tidak ditemukan`);
+        }
 
-          // [3b] Update qty pada record asli (dikurangi retur)
-          const qtyBaru = jualAsli.qty_barang - item.retur_barang;
-
-          await tx.jual.update({
-            where: { id: item.id },
-            data: {
-              qty_barang: qtyBaru,
-              total_harga: qtyBaru * jualAsli.harga_barang,
-            },
-          });
-
-          // [3c] Buat record retur
-          await tx.jretur.create({
-            data: {
-              nomor_nota: validatedData.nomorNota,
-              tanggal_nota: new Date(notaLama.tanggal_nota),
-              nama_barang: item.nama_barang,
-              harga_barang: item.harga_barang,
-              qty_barang: item.retur_barang,
-              total_harga: item.harga_barang * item.retur_barang,
-              tanggal_retur: new Date(validatedData.tanggal),
-              id_client: client.id,
-              id_jual: item.id,
-              nama_sales: jualAsli.nama_sales,
-            },
-          });
-
-          // [3d] Update stock barang
-          await tx.stock.update({
-            where: { nama_barang: item.nama_barang },
-            data: {
-              stock_akhir: { increment: item.retur_barang },
-              qty_in: { increment: item.retur_barang },
-            },
-          });
+        if (item.retur_barang > originalJual.qty_barang) {
+          throw new Error(
+            `Jumlah retur untuk barang ${item.nama_barang} melebihi jumlah jual asli`
+          );
         }
       }
 
+      // [3] Proses retur for each item
+      const jreturCreateData = dataToProcess.map((item) => ({
+        nomor_nota: validatedData.nomorNota,
+        tanggal_nota: notaLama.tanggal_nota,
+        nama_barang: item.nama_barang,
+        harga_barang: item.harga_barang,
+        qty_barang: item.retur_barang,
+        total_harga: item.harga_barang * item.retur_barang,
+        tanggal_retur: new Date(validatedData.tanggal),
+        id_client: client.id,
+        id_jual: item.id,
+        nama_sales: jualAsliMap.get(item.id)!.nama_sales,
+      }));
+
+      const jreturCreatePromise = tx.jretur.createMany({
+        data: jreturCreateData,
+      });
+
+      const jualUpdatePromises = dataToProcess.map((item) => {
+        const originalJual = jualAsliMap.get(item.id)!;
+        const qtyBaru = originalJual.qty_barang - item.retur_barang;
+        return tx.jual.update({
+          where: { id: item.id },
+          data: {
+            qty_barang: qtyBaru,
+            total_harga: qtyBaru * originalJual.harga_barang,
+          },
+        });
+      });
+
+      const stockUpdatePromises = dataToProcess.map((item) =>
+        tx.stock.update({
+          where: { nama_barang: item.nama_barang },
+          data: {
+            stock_akhir: { increment: item.retur_barang },
+            qty_in: { increment: item.retur_barang },
+          },
+        })
+      );
+
       // [4] Update nilai nota
-      await tx.jnota.update({
-        where: {
-          nomor_nota: validatedData.nomorNota,
-        },
+      const jnotaUpdatePromise = tx.jnota.update({
+        where: { nomor_nota: validatedData.nomorNota },
         data: {
           nilai_nota: validatedData.totalAkhir,
           saldo_nota: validatedData.totalAkhir,
@@ -158,16 +174,22 @@ export async function POST(request: NextRequest) {
       });
 
       // [5] Update saldo piutang client
-      await tx.client.update({
-        where: {
-          id: client.id,
-        },
+      const clientUpdatePromise = tx.client.update({
+        where: { id: client.id },
         data: {
           sldakhir_piutang: {
             increment: validatedData.totalAkhir - notaLama.nilai_nota,
           },
         },
       });
+
+      await Promise.all([
+        jreturCreatePromise,
+        ...jualUpdatePromises,
+        ...stockUpdatePromises,
+        jnotaUpdatePromise,
+        clientUpdatePromise,
+      ]);
     });
 
     logger.info(`POST /api/jual/retur succeeded. Retur processed.`);
