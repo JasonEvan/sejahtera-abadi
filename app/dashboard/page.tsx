@@ -3,6 +3,7 @@
 import QuickAction from "@/components/home/QuickAction";
 import RecentTransaction from "@/components/home/RecentTransaction";
 import TodayPerformance from "@/components/home/TodayPerformance";
+import TopSellingProducts from "@/components/home/TopSellingProducts";
 import { Box } from "@mui/material";
 
 export default function Home() {
@@ -11,6 +12,7 @@ export default function Home() {
       <QuickAction />
       <TodayPerformance />
       <RecentTransaction />
+      <TopSellingProducts />
     </Box>
   );
 }
