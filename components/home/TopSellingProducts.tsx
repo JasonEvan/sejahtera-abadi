@@ -1,18 +1,24 @@
+import { useHomepageStore } from "@/hooks/useHomepageStore";
 import { Box, Card, CardContent, Grid, Stack, Typography } from "@mui/material";
 
-type ProductsProps = {
-  name: string;
-  quantity: number;
-  total: number;
-};
-
-const products: ProductsProps[] = [
-  { name: "AMPLAS DICO P-100", quantity: 150, total: 1500000 },
-  { name: "AMPLAS DICO P-800", quantity: 200, total: 200000 },
-  { name: "ANGKER DINAMO FX", quantity: 750, total: 7500000 },
-];
-
 export default function TopSellingProducts() {
+  const products = useHomepageStore((state) => state.topSellingProducts);
+
+  if (products.length === 0) {
+    return (
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="h6" gutterBottom>
+          Top Sellings Products
+        </Typography>
+        <Card sx={{ bgcolor: "#eaeaea", p: 2 }}>
+          <Typography variant="body2" color="textSecondary">
+            No top selling products available.
+          </Typography>
+        </Card>
+      </Box>
+    );
+  }
+
   return (
     <Box>
       <Typography variant="h6" gutterBottom>

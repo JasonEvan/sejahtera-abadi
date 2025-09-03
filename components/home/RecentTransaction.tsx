@@ -1,3 +1,4 @@
+import { useHomepageStore } from "@/hooks/useHomepageStore";
 import {
   Box,
   Card,
@@ -12,22 +13,24 @@ import {
 } from "@mui/material";
 import { Fragment } from "react";
 
-type TransactionProps = {
-  id: number;
-  nama: string;
-  total: number;
-  status: "completed" | "pending";
-};
-
-const transactions: TransactionProps[] = [
-  { id: 1, nama: "VARIA/SMG", total: 1500000, status: "completed" },
-  { id: 2, nama: "VARIA/SMG", total: 200000, status: "completed" },
-  { id: 3, nama: "KHARISMA/PATI", total: 7500000, status: "pending" },
-  { id: 4, nama: "JASON/SMG", total: 220500, status: "completed" },
-  { id: 5, nama: "JASON/SMG", total: 75000, status: "pending" },
-];
-
 export default function RecentTransaction() {
+  const transactions = useHomepageStore((state) => state.recentTransactions);
+
+  if (transactions.length === 0) {
+    return (
+      <Box sx={{ mb: 2 }}>
+        <Typography variant="h6" gutterBottom>
+          Recent Transactions
+        </Typography>
+        <Card sx={{ bgcolor: "#eaeaea", p: 2 }}>
+          <Typography variant="body2" color="textSecondary">
+            No recent transactions available.
+          </Typography>
+        </Card>
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ mb: 2 }}>
       <Typography variant="h6" gutterBottom>
@@ -41,7 +44,7 @@ export default function RecentTransaction() {
                 <ListItem>
                   <ListItemText
                     primary={transaction.nama}
-                    secondary={`#${transaction.id}`}
+                    secondary={transaction.nota}
                   />
                   <Stack
                     sx={{

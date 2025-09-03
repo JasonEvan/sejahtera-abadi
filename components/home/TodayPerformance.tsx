@@ -5,47 +5,24 @@ import TrendingFlatIcon from "@mui/icons-material/TrendingFlat";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import PeopleIcon from "@mui/icons-material/People";
+import { useHomepageStore } from "@/hooks/useHomepageStore";
 
-type TodayPerformanceType = {
-  title: string;
-  content: string;
-  subcontent: string;
-  trends: "increase" | "decrease" | "stable";
-  titleIcon: React.ReactNode;
+const iconMap = {
+  AttachMoneyIcon: <AttachMoneyIcon />,
+  ShoppingCartIcon: <ShoppingCartIcon />,
+  PeopleIcon: <PeopleIcon />,
 };
 
-const todayPerformanceData: TodayPerformanceType[] = [
-  {
-    title: "Total Sales",
-    content: "Rp17.000.000",
-    subcontent: "+5% from yesterday",
-    trends: "increase",
-    titleIcon: <AttachMoneyIcon />,
-  },
-  {
-    title: "Transactions",
-    content: "13",
-    subcontent: "+2.7% from yesterday",
-    trends: "increase",
-    titleIcon: <ShoppingCartIcon />,
-  },
-  {
-    title: "Avg. Transaction",
-    content: "Rp1.307.692",
-    subcontent: "+10% from yesterday",
-    trends: "increase",
-    titleIcon: <AttachMoneyIcon />,
-  },
-  {
-    title: "Active Customers",
-    content: "6",
-    subcontent: "-1% from yesterday",
-    trends: "decrease",
-    titleIcon: <PeopleIcon />,
-  },
-];
-
 export default function TodayPerformance() {
+  const todaysPerformance = useHomepageStore(
+    (state) => state.todaysPerformance
+  );
+
+  const todayPerformanceData = todaysPerformance.map((item) => ({
+    ...item,
+    titleIcon: iconMap[item.titleIcon as keyof typeof iconMap] || null,
+  }));
+
   return (
     <Box>
       <Typography variant="h6" gutterBottom>
