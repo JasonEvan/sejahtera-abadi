@@ -22,6 +22,7 @@ export default function PiutangPage() {
     menuNota,
     isLoading,
     incrementalId,
+    isSubmitting,
   } = useLunasPiutangStore();
 
   async function handleSubmit() {
@@ -81,6 +82,7 @@ export default function PiutangPage() {
         <Button
           variant="contained"
           disabled={dataPelunasan.length < 1}
+          loading={isSubmitting}
           onClick={handleSubmit}
         >
           Pelunasan

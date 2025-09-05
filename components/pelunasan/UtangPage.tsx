@@ -22,6 +22,7 @@ export default function UtangPage() {
     menuNota,
     isLoading,
     incrementalId,
+    isSubmitting,
   } = useLunasUtangStore();
 
   async function handleSubmit() {
@@ -81,6 +82,7 @@ export default function UtangPage() {
         <Button
           variant="contained"
           disabled={dataPelunasan.length < 1}
+          loading={isSubmitting}
           onClick={handleSubmit}
         >
           Pelunasan
