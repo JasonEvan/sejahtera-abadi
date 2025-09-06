@@ -54,7 +54,7 @@ const columns: readonly Column[] = [
 ];
 
 export default function NoteTable() {
-  const { dataPenjualan, removeDataPenjualan, setTotalAkhir } = useJualStore();
+  const { dataPenjualan, removeDataPenjualan } = useJualStore();
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
 
@@ -67,11 +67,6 @@ export default function NoteTable() {
   ) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
-  };
-
-  const handleDelete = (id: number, subtotal: number) => {
-    removeDataPenjualan(id, subtotal);
-    setTotalAkhir();
   };
 
   return (
@@ -101,7 +96,7 @@ export default function NoteTable() {
                       return (
                         <TableCell key={column.id} align={column.align}>
                           <IconButton
-                            onClick={() => handleDelete(row.id, row.subtotal)}
+                            onClick={() => removeDataPenjualan(row.id)}
                             color="error"
                             aria-label="delete"
                           >

@@ -47,12 +47,9 @@ interface JualStore {
     kotaClient: string
   ) => void;
   setClientInformationDone: () => void;
-  incrementId: () => void;
   setDataPenjualan: (dataPenjualan: DataPenjualanI) => void;
-  removeDataPenjualan: (id: number, subtotal: number) => void;
-  tambahTotalPenjualan: (subtotal: number) => void;
+  removeDataPenjualan: (id: number) => void;
   setDiskon: (diskon: number) => void;
-  setTotalAkhir: () => void;
   fetchMenuBarang: () => Promise<void>;
   submitJual: () => Promise<boolean>;
   resetAll: () => void;
@@ -90,48 +87,84 @@ export const useJualStore = create<JualStore>()(
         set({ namaLangganan, namaSales, nomorNota, tanggalNota, kotaClient });
       },
       setClientInformationDone: () => set({ clientInformationDone: true }),
-      incrementId: () => {
-        set((state) => ({ incrementalId: state.incrementalId + 1 }));
-      },
       setDataPenjualan: (newDataPenjualan) => {
-        set((state) => ({
-          dataPenjualan: [...state.dataPenjualan, newDataPenjualan],
-        }));
-      },
-      removeDataPenjualan: (id: number, subtotal: number) => {
-        set((state) => ({
-          dataPenjualan: state.dataPenjualan.filter((item) => item.id !== id),
-          totalPenjualan: state.totalPenjualan - subtotal,
-        }));
-      },
-      tambahTotalPenjualan: (subtotal) => {
-        set((state) => ({ totalPenjualan: state.totalPenjualan + subtotal }));
-      },
-      setDiskon: (diskon) => set({ diskon }),
-      setTotalAkhir: () => {
-        set((state) => ({
-          totalAkhir:
-            state.totalPenjualan - (state.diskon * state.totalPenjualan) / 100,
-        }));
-      },
+        set((state) => {
+          const newMenuBarang = state.menuBarang.map((item) => {
+            if (item.nama_barang === newDataPenjualan.namaBarang) {
+              return {
+                ...item,
+                stock_akhir: item.stock_akhir - newDataPenjualan.jumlah,
+              };
+            }
 
+            return item;
+          });
+
+          const newTotalPenjualan =
+            state.totalPenjualan + newDataPenjualan.subtotal;
+          const newTotalAkhir =
+            newTotalPenjualan - (state.diskon * newTotalPenjualan) / 100;
+
+          return {
+            dataPenjualan: [...state.dataPenjualan, newDataPenjualan],
+            menuBarang: newMenuBarang,
+            incrementalId: state.incrementalId + 1,
+            totalPenjualan: newTotalPenjualan,
+            totalAkhir: newTotalAkhir,
+          };
+        });
+      },
+      removeDataPenjualan: (id: number) => {
+        set((state) => {
+          const itemToRemove = state.dataPenjualan.find(
+            (item) => item.id === id
+          );
+          if (!itemToRemove) return {};
+
+          const newMenuBarang = state.menuBarang.map((item) => {
+            if (item.nama_barang === itemToRemove.namaBarang) {
+              return {
+                ...item,
+                stock_akhir: item.stock_akhir + itemToRemove.jumlah,
+              };
+            }
+
+            return item;
+          });
+
+          const newTotalPenjualan =
+            state.totalPenjualan - itemToRemove.subtotal;
+          const newTotalAkhir =
+            newTotalPenjualan - (state.diskon * newTotalPenjualan) / 100;
+
+          return {
+            dataPenjualan: state.dataPenjualan.filter((item) => item.id !== id),
+            menuBarang: newMenuBarang,
+            totalPenjualan: newTotalPenjualan,
+            totalAkhir: newTotalAkhir,
+          };
+        });
+      },
+      setDiskon: (diskon) => {
+        set((state) => ({
+          diskon,
+          totalAkhir:
+            state.totalPenjualan - (diskon * state.totalPenjualan) / 100,
+        }));
+      },
       fetchMenuBarang: async () => {
-        set({ isLoading: true });
         try {
+          set({ isLoading: true });
           const response = await fetch("/api/barang/menu-jual", {
             cache: "no-store",
           });
 
-          if (response.status !== 200) {
+          if (!response.ok) {
             throw new Error("Failed to fetch menu barang");
           }
 
           const { data }: { data: MenuBarangJual[] } = await response.json();
-          const finalForm = data.map((item) => ({
-            ...item,
-            nama_barang: `${item.nama_barang} || ${item.stock_akhir} || ${item.rusak_barang}`,
-          }));
-          set({ menuBarang: finalForm });
+          set({ menuBarang: data });
         } catch (error) {
           Swal.fire({
             icon: "error",
@@ -153,9 +186,6 @@ export const useJualStore = create<JualStore>()(
           const response = await fetch("/api/jual", {
             cache: "no-store",
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
             body: JSON.stringify({
               namaLangganan: get().namaLangganan,
               namaSales: get().namaSales,
@@ -169,7 +199,7 @@ export const useJualStore = create<JualStore>()(
             }),
           });
 
-          if (response.status !== 201) {
+          if (!response.ok) {
             throw new Error("Failed to submit jual data");
           }
 

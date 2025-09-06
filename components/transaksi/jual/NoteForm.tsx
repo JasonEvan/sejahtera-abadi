@@ -8,50 +8,30 @@ import {
 } from "@mui/material";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-import { useEffect, useState } from "react";
-import { useJualStore } from "@/hooks/useJualStore";
+import { useEffect } from "react";
+import { MenuBarangJual, useJualStore } from "@/hooks/useJualStore";
 import Swal from "sweetalert2";
 
 export default function NoteForm() {
   const {
     menuBarang,
     isLoading: menuBarangLoading,
-    setDataPenjualan,
     incrementalId,
-    incrementId,
-    dataPenjualan,
-    tambahTotalPenjualan,
-    setTotalAkhir,
+    setDataPenjualan,
   } = useJualStore();
-  const [namaBarang, setNamaBarang] = useState<string[]>([]);
 
-  const isProfitable = (value: {
-    namabarang: string;
-    jumlah: number;
-    modal: number;
-    harga: number;
-  }) => value.harga >= value.modal;
+  const isProfitable = (value: { modal: number; harga: number }) =>
+    value.harga >= value.modal;
 
   const isPersediaanEnough = (value: {
     namabarang: string;
     jumlah: number;
-    modal: number;
-    harga: number;
   }) => {
-    const totalStockInNote = dataPenjualan.reduce((acc: number, curr) => {
-      if (curr.namaBarang === value.namabarang.split(" || ")[0].trim()) {
-        return acc + curr.jumlah;
-      }
-      return acc;
-    }, 0);
-
-    const currTotalStock = value.jumlah + totalStockInNote;
-
-    const availableStock = menuBarang.find(
+    const barang = menuBarang.find(
       (item) => item.nama_barang === value.namabarang
-    )?.stock_akhir;
+    );
 
-    return currTotalStock <= (availableStock || 0);
+    return barang ? value.jumlah <= barang.stock_akhir : false;
   };
 
   const validationSchema = Yup.object({
@@ -75,7 +55,7 @@ export default function NoteForm() {
       harga: 0,
     },
     validationSchema,
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       // validate if persediaan is enough
       if (!isPersediaanEnough(values)) {
         formik.setFieldError("jumlah", "Persediaan tidak cukup");
@@ -84,7 +64,7 @@ export default function NoteForm() {
 
       // validate if harga is greater than or equal to modal
       if (!isProfitable(values)) {
-        Swal.fire({
+        const result = await Swal.fire({
           title: "Are you sure?",
           text: "Harga jual lebih kecil dari modal, apakah anda yakin?",
           icon: "warning",
@@ -92,45 +72,23 @@ export default function NoteForm() {
           confirmButtonColor: "#3085d6",
           cancelButtonColor: "#d33",
           confirmButtonText: "Yes, I'm sure!",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            setDataPenjualan({
-              id: incrementalId,
-              namaBarang: values.namabarang.split(" || ")[0].trim(),
-              jumlah: values.jumlah,
-              hargaSatuan: values.harga,
-              modal: values.modal,
-              subtotal: values.jumlah * values.harga,
-            });
-            incrementId();
-            tambahTotalPenjualan(values.jumlah * values.harga);
-            setTotalAkhir();
-            formik.resetForm();
-          }
         });
-      } else {
-        setDataPenjualan({
-          id: incrementalId,
-          namaBarang: values.namabarang.split(" || ")[0].trim(),
-          jumlah: values.jumlah,
-          hargaSatuan: values.harga,
-          modal: values.modal,
-          subtotal: values.jumlah * values.harga,
-        });
-        incrementId();
-        tambahTotalPenjualan(values.jumlah * values.harga);
-        setTotalAkhir();
-        formik.resetForm();
+
+        if (!result.isConfirmed) return;
       }
+
+      setDataPenjualan({
+        id: incrementalId,
+        namaBarang: values.namabarang,
+        jumlah: values.jumlah,
+        hargaSatuan: values.harga,
+        modal: values.modal,
+        subtotal: values.jumlah * values.harga,
+      });
+
+      formik.resetForm();
     },
   });
-
-  useEffect(() => {
-    if (menuBarang && menuBarang.length > 0) {
-      const options = menuBarang.map((item) => item.nama_barang);
-      setNamaBarang(options);
-    }
-  }, [menuBarang]);
 
   useEffect(() => {
     const data = menuBarang.find(
@@ -151,18 +109,29 @@ export default function NoteForm() {
             <Autocomplete
               disablePortal
               loading={menuBarangLoading}
-              value={formik.values.namabarang}
-              onChange={(event, newValue) => {
-                formik.setFieldValue("namabarang", newValue || "");
+              options={menuBarang}
+              // gunakan getOptionLabel untuk memformat tampilan opsi
+              getOptionLabel={(option) =>
+                `${option.nama_barang} || ${option.stock_akhir} || ${option.rusak_barang}`
+              }
+              value={
+                menuBarang.find(
+                  (item) => item.nama_barang === formik.values.namabarang
+                ) || null
+              }
+              onChange={(event, newValue: MenuBarangJual | null) => {
+                formik.setFieldValue("namabarang", newValue?.nama_barang || "");
               }}
               onBlur={() => formik.setFieldTouched("namabarang", true)}
-              options={namaBarang}
+              isOptionEqualToValue={(option, value) =>
+                option.nama_barang === value.nama_barang
+              }
               renderInput={(params) => (
                 <TextField
                   {...params}
                   label="Nama Barang"
                   variant="outlined"
-                  sx={{ width: "100%" }}
+                  fullWidth
                   error={
                     formik.touched.namabarang &&
                     Boolean(formik.errors.namabarang)
@@ -179,7 +148,7 @@ export default function NoteForm() {
               label="Jumlah"
               type="number"
               variant="outlined"
-              sx={{ width: "100%" }}
+              fullWidth
               name="jumlah"
               value={formik.values.jumlah}
               onChange={formik.handleChange}
@@ -194,7 +163,7 @@ export default function NoteForm() {
               label="Modal"
               type="number"
               variant="outlined"
-              sx={{ width: "100%" }}
+              fullWidth
               name="modal"
               value={formik.values.modal}
               onChange={formik.handleChange}
@@ -215,7 +184,7 @@ export default function NoteForm() {
               label="Harga Jual"
               type="number"
               variant="outlined"
-              sx={{ width: "100%" }}
+              fullWidth
               name="harga"
               value={formik.values.harga}
               onChange={formik.handleChange}
