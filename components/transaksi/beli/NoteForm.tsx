@@ -8,8 +8,8 @@ import {
 } from "@mui/material";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-import { useBeliStore } from "@/hooks/useBeliStore";
-import { useEffect, useState } from "react";
+import { MenuBarangBeli, useBeliStore } from "@/hooks/useBeliStore";
+import { useEffect } from "react";
 
 export default function NoteForm() {
   const {
@@ -17,11 +17,7 @@ export default function NoteForm() {
     isLoading: menuBarangLoading,
     incrementalId,
     setDataPembelian,
-    incrementId,
-    tambahTotalPembelian,
-    setTotalAkhir,
   } = useBeliStore();
-  const [namaBarang, setNamaBarang] = useState<string[]>([]);
 
   const validationSchema = Yup.object({
     namabarang: Yup.string().required("Nama barang is required"),
@@ -51,17 +47,9 @@ export default function NoteForm() {
         jumlah: values.jumlah,
         subtotal: values.jumlah * values.hargabeli,
       });
-      incrementId();
-      tambahTotalPembelian(values.jumlah * values.hargabeli);
-      setTotalAkhir();
       formik.resetForm();
     },
   });
-
-  useEffect(() => {
-    const namaBarangOptions = menuBarang.map((item) => item.nama_barang);
-    setNamaBarang(namaBarangOptions);
-  }, [menuBarang]);
 
   useEffect(() => {
     const data = menuBarang.find(
@@ -81,12 +69,21 @@ export default function NoteForm() {
             <Autocomplete
               disablePortal
               loading={menuBarangLoading}
-              value={formik.values.namabarang}
-              onChange={(event, newValue) => {
-                formik.setFieldValue("namabarang", newValue || "");
+              options={menuBarang}
+              // gunakan getOptionLabel untuk memformat tampilan opsi
+              getOptionLabel={(option) => option.nama_barang}
+              value={
+                menuBarang.find(
+                  (item) => item.nama_barang === formik.values.namabarang
+                ) || null
+              }
+              onChange={(event, newValue: MenuBarangBeli | null) => {
+                formik.setFieldValue("namabarang", newValue?.nama_barang || "");
               }}
               onBlur={() => formik.setFieldTouched("namabarang", true)}
-              options={namaBarang}
+              isOptionEqualToValue={(option, value) =>
+                option.nama_barang === value.nama_barang
+              }
               renderInput={(params) => (
                 <TextField
                   {...params}

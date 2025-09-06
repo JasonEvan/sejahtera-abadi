@@ -6,14 +6,8 @@ import Swal from "sweetalert2";
 import { useBeliStore } from "@/hooks/useBeliStore";
 
 export default function NoteSummary() {
-  const {
-    totalPembelian,
-    totalAkhir,
-    isSubmitting,
-    setDiskon,
-    setTotalAkhir,
-    submitBeli,
-  } = useBeliStore();
+  const { totalPembelian, totalAkhir, isSubmitting, setDiskon, submitBeli } =
+    useBeliStore();
 
   const validationSchema = Yup.object({
     nilainota: Yup.number()
@@ -67,7 +61,6 @@ export default function NoteSummary() {
   useEffect(() => {
     if (formik.values.diskon >= 0) {
       setDiskon(formik.values.diskon);
-      setTotalAkhir();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formik.values.diskon]);
@@ -82,7 +75,7 @@ export default function NoteSummary() {
               label="Nilai Nota"
               type="number"
               variant="outlined"
-              sx={{ width: "100%" }}
+              fullWidth
               name="nilainota"
               value={formik.values.nilainota}
               onChange={formik.handleChange}
@@ -106,7 +99,7 @@ export default function NoteSummary() {
               label="Nilai Akhir"
               type="number"
               variant="outlined"
-              sx={{ width: "100%" }}
+              fullWidth
               name="total"
               value={formik.values.total}
               onChange={formik.handleChange}
@@ -127,7 +120,7 @@ export default function NoteSummary() {
               label="Diskon"
               type="number"
               variant="outlined"
-              sx={{ width: "100%" }}
+              fullWidth
               name="diskon"
               value={formik.values.diskon}
               onChange={formik.handleChange}

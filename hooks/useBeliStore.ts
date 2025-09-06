@@ -42,12 +42,9 @@ interface BeliStore {
     kotaClient: string
   ) => void;
   setClientInformationDone: () => void;
-  incrementId: () => void;
   setDataPembelian: (dataPembelian: DataPembelianI) => void;
-  removeDataPembelian: (id: number, subtotal: number) => void;
-  tambahTotalPembelian: (subtotal: number) => void;
+  removeDataPembelian: (id: number) => void;
   setDiskon: (diskon: number) => void;
-  setTotalAkhir: () => void;
   fetchMenuBarang: () => Promise<void>;
   submitBeli: () => Promise<boolean>;
   resetAll: () => void;
@@ -92,37 +89,47 @@ export const useBeliStore = create<BeliStore>()(
         set({ clientInformationDone: true });
       },
 
-      incrementId: () => {
-        set((state) => ({ incrementalId: state.incrementalId + 1 }));
-      },
-
       setDataPembelian: (newDataPembelian) => {
-        set((state) => ({
-          dataPembelian: [...state.dataPembelian, newDataPembelian],
-        }));
+        set((state) => {
+          const newTotalPembelian =
+            state.totalPembelian + newDataPembelian.subtotal;
+          const newTotalAkhir =
+            newTotalPembelian - (state.diskon * newTotalPembelian) / 100;
+
+          return {
+            dataPembelian: [...state.dataPembelian, newDataPembelian],
+            incrementalId: state.incrementalId + 1,
+            totalPembelian: newTotalPembelian,
+            totalAkhir: newTotalAkhir,
+          };
+        });
       },
 
-      removeDataPembelian: (id, subtotal) => {
-        set((state) => ({
-          dataPembelian: state.dataPembelian.filter((item) => item.id !== id),
-          totalPembelian: state.totalPembelian - subtotal,
-        }));
-      },
+      removeDataPembelian: (id) => {
+        set((state) => {
+          const itemToRemove = state.dataPembelian.find(
+            (item) => item.id === id
+          );
+          if (!itemToRemove) return {};
 
-      tambahTotalPembelian: (subtotal) => {
-        set((state) => ({
-          totalPembelian: state.totalPembelian + subtotal,
-        }));
+          const newTotalPembelian =
+            state.totalPembelian - itemToRemove.subtotal;
+          const newTotalAkhir =
+            newTotalPembelian - (state.diskon * newTotalPembelian) / 100;
+
+          return {
+            dataPembelian: state.dataPembelian.filter((item) => item.id !== id),
+            totalPembelian: newTotalPembelian,
+            totalAkhir: newTotalAkhir,
+          };
+        });
       },
 
       setDiskon: (diskon) => {
-        set({ diskon });
-      },
-
-      setTotalAkhir: () => {
         set((state) => ({
+          diskon,
           totalAkhir:
-            state.totalPembelian - (state.diskon * state.totalPembelian) / 100,
+            state.totalPembelian - (diskon * state.totalPembelian) / 100,
         }));
       },
 
@@ -162,9 +169,6 @@ export const useBeliStore = create<BeliStore>()(
           const response = await fetch("/api/beli", {
             cache: "no-store",
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
             body: JSON.stringify({
               namaClient: get().namaClient,
               nomorNota: get().nomorNota,
