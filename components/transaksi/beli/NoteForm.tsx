@@ -15,8 +15,8 @@ export default function NoteForm() {
   const {
     menuBarang,
     isLoading: menuBarangLoading,
-    setDataPembelian,
     incrementalId,
+    setDataPembelian,
     incrementId,
     tambahTotalPembelian,
     setTotalAkhir,
@@ -92,7 +92,7 @@ export default function NoteForm() {
                   {...params}
                   label="Nama Barang"
                   variant="outlined"
-                  sx={{ width: "100%" }}
+                  fullWidth
                   error={
                     formik.touched.namabarang &&
                     Boolean(formik.errors.namabarang)
@@ -106,25 +106,16 @@ export default function NoteForm() {
           </Grid>
           <Grid size={{ xs: 12, sm: 12, md: 3, lg: 3 }}>
             <TextField
-              label="Harga Beli"
+              label="Jumlah"
               type="number"
               variant="outlined"
-              sx={{ width: "100%" }}
-              name="hargabeli"
-              value={formik.values.hargabeli}
+              fullWidth
+              name="jumlah"
+              value={formik.values.jumlah}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              error={
-                formik.touched.hargabeli && Boolean(formik.errors.hargabeli)
-              }
-              helperText={formik.touched.hargabeli && formik.errors.hargabeli}
-              slotProps={{
-                input: {
-                  startAdornment: (
-                    <InputAdornment position="start">Rp</InputAdornment>
-                  ),
-                },
-              }}
+              error={formik.touched.jumlah && Boolean(formik.errors.jumlah)}
+              helperText={formik.touched.jumlah && formik.errors.jumlah}
             />
           </Grid>
           <Grid size={6}>
@@ -133,7 +124,7 @@ export default function NoteForm() {
               label="Harga Jual"
               type="number"
               variant="outlined"
-              sx={{ width: "100%" }}
+              fullWidth
               name="hargajual"
               value={formik.values.hargajual}
               onChange={formik.handleChange}
@@ -153,16 +144,25 @@ export default function NoteForm() {
           </Grid>
           <Grid size={6}>
             <TextField
-              label="Jumlah"
+              label="Harga Beli"
               type="number"
               variant="outlined"
-              sx={{ width: "100%" }}
-              name="jumlah"
-              value={formik.values.jumlah}
+              fullWidth
+              name="hargabeli"
+              value={formik.values.hargabeli}
               onChange={formik.handleChange}
               onBlur={formik.handleBlur}
-              error={formik.touched.jumlah && Boolean(formik.errors.jumlah)}
-              helperText={formik.touched.jumlah && formik.errors.jumlah}
+              error={
+                formik.touched.hargabeli && Boolean(formik.errors.hargabeli)
+              }
+              helperText={formik.touched.hargabeli && formik.errors.hargabeli}
+              slotProps={{
+                input: {
+                  startAdornment: (
+                    <InputAdornment position="start">Rp</InputAdornment>
+                  ),
+                },
+              }}
             />
           </Grid>
           <Button variant="contained" type="submit">
