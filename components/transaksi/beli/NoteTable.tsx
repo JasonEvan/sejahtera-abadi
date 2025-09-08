@@ -10,8 +10,11 @@ import {
   TableRow,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import { useState } from "react";
-import { useBeliStore } from "@/hooks/useBeliStore";
+import { DataPembelianI, useBeliStore } from "@/hooks/useBeliStore";
+import { modals } from "@/lib/modal";
+import EditBeliForm from "./EditBeliForm";
 
 interface Column {
   id:
@@ -54,7 +57,7 @@ const columns: readonly Column[] = [
   {
     id: "action",
     label: "Action",
-    minWidth: 50,
+    minWidth: 100,
     align: "center",
   },
 ];
@@ -73,6 +76,15 @@ export default function NoteTable() {
   ) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
+  };
+
+  const handleEdit = (row: DataPembelianI) => {
+    modals.open({
+      title: "Edit Item Pembelian",
+      type: "form",
+      size: "sm",
+      children: <EditBeliForm row={row} />,
+    });
   };
 
   return (
@@ -101,6 +113,13 @@ export default function NoteTable() {
                     if (column.id === "action") {
                       return (
                         <TableCell key={column.id} align={column.align}>
+                          <IconButton
+                            onClick={() => handleEdit(row)}
+                            color="warning"
+                            aria-label="edit"
+                          >
+                            <EditIcon />
+                          </IconButton>
                           <IconButton
                             onClick={() => removeDataPembelian(row.id)}
                             color="error"

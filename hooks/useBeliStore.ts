@@ -43,6 +43,7 @@ interface BeliStore {
   ) => void;
   setClientInformationDone: () => void;
   setDataPembelian: (dataPembelian: DataPembelianI) => void;
+  updateDataPembelian: (dataPembelian: DataPembelianI) => void;
   removeDataPembelian: (id: number) => void;
   setDiskon: (diskon: number) => void;
   fetchMenuBarang: () => Promise<void>;
@@ -99,6 +100,38 @@ export const useBeliStore = create<BeliStore>()(
           return {
             dataPembelian: [...state.dataPembelian, newDataPembelian],
             incrementalId: state.incrementalId + 1,
+            totalPembelian: newTotalPembelian,
+            totalAkhir: newTotalAkhir,
+          };
+        });
+      },
+
+      updateDataPembelian: (data) => {
+        set((state) => {
+          const updatedDataPembelian = state.dataPembelian.map((item) => {
+            if (item.id === data.id) {
+              return {
+                ...item,
+                namaBarang: data.namaBarang,
+                jumlah: data.jumlah,
+                hargaBeli: data.hargaBeli,
+                subtotal: data.jumlah * data.hargaBeli,
+              };
+            }
+
+            return item;
+          });
+
+          const newTotalPembelian = updatedDataPembelian.reduce(
+            (acc, curr) => acc + curr.subtotal,
+            0
+          );
+
+          const newTotalAkhir =
+            newTotalPembelian - (state.diskon * newTotalPembelian) / 100;
+
+          return {
+            dataPembelian: updatedDataPembelian,
             totalPembelian: newTotalPembelian,
             totalAkhir: newTotalAkhir,
           };
