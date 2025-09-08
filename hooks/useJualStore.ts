@@ -48,6 +48,7 @@ interface JualStore {
   ) => void;
   setClientInformationDone: () => void;
   setDataPenjualan: (dataPenjualan: DataPenjualanI) => void;
+  updateDataPenjualan: (dataPenjualan: DataPenjualanI) => void;
   removeDataPenjualan: (id: number) => void;
   setDiskon: (diskon: number) => void;
   fetchMenuBarang: () => Promise<void>;
@@ -109,6 +110,84 @@ export const useJualStore = create<JualStore>()(
             dataPenjualan: [...state.dataPenjualan, newDataPenjualan],
             menuBarang: newMenuBarang,
             incrementalId: state.incrementalId + 1,
+            totalPenjualan: newTotalPenjualan,
+            totalAkhir: newTotalAkhir,
+          };
+        });
+      },
+      updateDataPenjualan: (data) => {
+        set((state) => {
+          const originalItem = state.dataPenjualan.find(
+            (item) => item.id === data.id
+          );
+          if (!originalItem) return {}; // Item tidak ditemukan, jangan lakukan apa-apa
+
+          let updatedMenuBarang = [...state.menuBarang];
+          const hasNamaBarangChanged =
+            originalItem.namaBarang !== data.namaBarang;
+          const qtyDelta = originalItem.jumlah - data.jumlah;
+
+          if (hasNamaBarangChanged) {
+            // --- LOGIKA UNTUK PERUBAHAN NAMA BARANG ---
+
+            // 1. Kembalikan stok untuk barang lama
+            updatedMenuBarang = updatedMenuBarang.map((menuItem) => {
+              if (menuItem.nama_barang === originalItem.namaBarang) {
+                return {
+                  ...menuItem,
+                  stock_akhir: menuItem.stock_akhir + originalItem.jumlah,
+                };
+              }
+              return menuItem;
+            });
+
+            // 2. Ambil stok untuk barang baru dengan kuantitas baru
+            updatedMenuBarang = updatedMenuBarang.map((menuItem) => {
+              if (menuItem.nama_barang === data.namaBarang) {
+                return {
+                  ...menuItem,
+                  stock_akhir: menuItem.stock_akhir - data.jumlah,
+                };
+              }
+              return menuItem;
+            });
+          } else {
+            // --- LOGIKA UNTUK PERUBAHAN KUANTITAS SAJA ---
+            updatedMenuBarang = updatedMenuBarang.map((menuItem) => {
+              if (menuItem.nama_barang === originalItem.namaBarang) {
+                return {
+                  ...menuItem,
+                  stock_akhir: menuItem.stock_akhir + qtyDelta,
+                };
+              }
+              return menuItem;
+            });
+          }
+
+          const updatedDataPenjualan = state.dataPenjualan.map((item) => {
+            if (item.id === data.id) {
+              return {
+                ...item, // Menyertakan ID
+                namaBarang: data.namaBarang,
+                jumlah: data.jumlah,
+                hargaSatuan: data.hargaSatuan,
+                subtotal: data.jumlah * data.hargaSatuan, // Hitung ulang subtotal
+              };
+            }
+            return item;
+          });
+
+          const newTotalPenjualan = updatedDataPenjualan.reduce(
+            (acc, curr) => acc + curr.subtotal,
+            0
+          );
+
+          const newTotalAkhir =
+            newTotalPenjualan - (state.diskon * newTotalPenjualan) / 100;
+
+          return {
+            dataPenjualan: updatedDataPenjualan,
+            menuBarang: updatedMenuBarang,
             totalPenjualan: newTotalPenjualan,
             totalAkhir: newTotalAkhir,
           };

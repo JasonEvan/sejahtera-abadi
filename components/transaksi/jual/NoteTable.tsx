@@ -1,4 +1,4 @@
-import { useJualStore } from "@/hooks/useJualStore";
+import { DataPenjualanI, useJualStore } from "@/hooks/useJualStore";
 import {
   Box,
   IconButton,
@@ -11,7 +11,10 @@ import {
   TableRow,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import { useState } from "react";
+import { modals } from "@/lib/modal";
+import EditJualForm from "./EditJualForm";
 
 interface Column {
   id: "namaBarang" | "hargaSatuan" | "modal" | "jumlah" | "subtotal" | "action";
@@ -48,7 +51,7 @@ const columns: readonly Column[] = [
   {
     id: "action",
     label: "Action",
-    minWidth: 50,
+    minWidth: 100,
     align: "center",
   },
 ];
@@ -67,6 +70,15 @@ export default function NoteTable() {
   ) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
+  };
+
+  const handleEdit = (row: DataPenjualanI) => {
+    modals.open({
+      title: "Edit Item Penjualan",
+      type: "form",
+      size: "sm",
+      children: <EditJualForm row={row} />,
+    });
   };
 
   return (
@@ -95,6 +107,13 @@ export default function NoteTable() {
                     if (column.id === "action") {
                       return (
                         <TableCell key={column.id} align={column.align}>
+                          <IconButton
+                            onClick={() => handleEdit(row)}
+                            color="warning"
+                            aria-label="edit"
+                          >
+                            <EditIcon />
+                          </IconButton>
                           <IconButton
                             onClick={() => removeDataPenjualan(row.id)}
                             color="error"
