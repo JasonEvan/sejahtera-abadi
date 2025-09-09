@@ -13,6 +13,9 @@ export async function GET() {
         modal: true,
         rusak_barang: true,
       },
+      orderBy: {
+        nama_barang: "asc",
+      },
     });
 
     logger.info(

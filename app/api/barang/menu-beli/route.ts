@@ -10,6 +10,9 @@ export async function GET() {
         nama_barang: true,
         jual_barang: true,
       },
+      orderBy: {
+        nama_barang: "asc",
+      },
     });
 
     logger.info(
