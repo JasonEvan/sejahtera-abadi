@@ -8,8 +8,10 @@ import EditIcon from "@mui/icons-material/Edit";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import AssignmentReturnIcon from "@mui/icons-material/AssignmentReturn";
 import BackupIcon from "@mui/icons-material/Backup";
-import { usePathname } from "next/navigation";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { usePathname, useRouter } from "next/navigation";
 import { Box, Button, Typography } from "@mui/material";
+import Swal from "sweetalert2";
 
 export const menus = [
   { label: "Home", path: "/dashboard", icon: <HomeIcon /> },
@@ -36,6 +38,31 @@ export const menus = [
 
 export default function Sidebar() {
   const pathName = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    try {
+      const response = await fetch("/api/auth/logout", {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to logout. Please try again.");
+      }
+
+      router.replace("/");
+    } catch (error) {
+      await Swal.fire({
+        icon: "error",
+        title: "Logout Failed",
+        text:
+          error instanceof Error
+            ? error.message
+            : "An error occurred during logout. Please try again.",
+        confirmButtonText: "OK",
+      });
+    }
+  }
 
   return (
     <Box
@@ -48,10 +75,11 @@ export default function Sidebar() {
         height: "100vh",
         width: "230px",
         padding: 2,
-        display: { xs: "none", sm: "none", md: "block", lg: "block" },
+        display: { xs: "none", sm: "none", md: "flex", lg: "flex" },
+        flexDirection: "column",
       }}
     >
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h5" gutterBottom textAlign="center">
         Sejahtera Abadi
       </Typography>
       {menus.map((menu) => (
@@ -61,15 +89,23 @@ export default function Sidebar() {
           sx={{
             display: "flex",
             alignItems: "center",
-            width: "100%",
             textAlign: "left",
           }}
+          fullWidth
           startIcon={menu.icon}
           href={menu.path}
         >
           {menu.label}
         </Button>
       ))}
+      <Button
+        startIcon={<LogoutIcon />}
+        fullWidth
+        sx={{ display: "flex", alignItems: "center", marginTop: "auto" }}
+        onClick={handleLogout}
+      >
+        Logout
+      </Button>
     </Box>
   );
 }
