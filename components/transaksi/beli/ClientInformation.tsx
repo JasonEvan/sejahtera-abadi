@@ -11,6 +11,7 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useNamaClient } from "@/hooks/useNamaClient";
 import { useBeliStore } from "@/hooks/useBeliStore";
+import { useEffect } from "react";
 
 export default function ClientInformation() {
   const { namaClient, isLoading: namaClientLoading } = useNamaClient();
@@ -54,6 +55,13 @@ export default function ClientInformation() {
       fetchMenuBarang();
     },
   });
+
+  useEffect(() => {
+    if (!clientInformationDone) {
+      formik.resetForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientInformationDone]);
 
   const reset = () => {
     formik.resetForm();

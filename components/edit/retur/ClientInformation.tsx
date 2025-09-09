@@ -1,6 +1,7 @@
 import { Autocomplete, Box, Button, Grid, TextField } from "@mui/material";
 import * as Yup from "yup";
 import { useFormik } from "formik";
+import { useEffect } from "react";
 
 type ClientInformationProps = {
   nomorNotaOption: string[];
@@ -36,6 +37,13 @@ export default function ClientInformation({
       fetchDataRetur(values.nomornota);
     },
   });
+
+  useEffect(() => {
+    if (!nomorNotaDone) {
+      formik.resetForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nomorNotaDone]);
 
   return (
     <Box>

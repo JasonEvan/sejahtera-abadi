@@ -14,6 +14,7 @@ import { useFormik } from "formik";
 import { useEditLunasPiutangStore } from "@/hooks/edit/useEditLunasStore";
 import NoteTable from "@/components/edit/pelunasan/NoteTable";
 import Swal from "sweetalert2";
+import { useEffect } from "react";
 
 export default function PelunasanPiutangPage() {
   const {
@@ -86,6 +87,13 @@ export default function PelunasanPiutangPage() {
       formik.resetForm();
     }
   };
+
+  useEffect(() => {
+    if (!nomorNotaDone) {
+      formik.resetForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nomorNotaDone]);
 
   return (
     <Box>
