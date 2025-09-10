@@ -49,8 +49,9 @@ export default function NotaPenjualanPage() {
       <style>{`
         @media print {
           @page {
-            size: 21.7cm 12cm;
+            size: 21.7cm 14cm;
             margin: 0;
+            margin-bottom: 2.5cm;
           }
         }
       `}</style>
