@@ -176,3 +176,26 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function DELETE() {
+  try {
+    const prisma = PrismaService.getInstance();
+    await prisma.$executeRaw`TRUNCATE TABLE client, salesman, stock, bnota, jnota, beli, jual, blunas, jlunas, bretur, jretur RESTART IDENTITY CASCADE;`;
+
+    logger.info("DELETE /api/backup succeeded. All data deleted.");
+    return NextResponse.json({ message: "All data deleted successfully." });
+  } catch (error) {
+    logger.error(
+      `DELETE /api/backup failed: ${
+        error instanceof Error ? error.message : error
+      }`
+    );
+
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
