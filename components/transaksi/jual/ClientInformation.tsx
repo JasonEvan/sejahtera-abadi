@@ -28,14 +28,14 @@ export default function ClientInformation() {
   const {
     setClientInformation,
     setClientInformationDone,
-    clientInformationDone,
     resetAll,
+    fetchMenuBarang,
+    clientInformationDone,
     namaLangganan,
     namaSales: namaSalesStore,
     nomorNota,
     tanggalNota,
     kotaClient,
-    fetchMenuBarang,
   } = useJualStore();
 
   const validationSchema = Yup.object({
@@ -79,6 +79,13 @@ export default function ClientInformation() {
     formik.setFieldValue("nomornota", lastNomorNota || "");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastNomorNota]);
+
+  useEffect(() => {
+    if (!clientInformationDone) {
+      formik.resetForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientInformationDone]);
 
   const reset = () => {
     formik.resetForm();

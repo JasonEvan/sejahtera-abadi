@@ -63,6 +63,13 @@ export default function ClientInformation({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [formik.values.namaclient]);
 
+  useEffect(() => {
+    if (!clientInformationDone) {
+      formik.resetForm();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientInformationDone]);
+
   return (
     <Box sx={{ marginBottom: 2 }}>
       <form className="w-full" onSubmit={formik.handleSubmit}>
