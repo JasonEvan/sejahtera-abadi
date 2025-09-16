@@ -11,7 +11,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import CallMadeOutlinedIcon from "@mui/icons-material/CallMadeOutlined";
@@ -20,59 +20,73 @@ import ReceiptLongOutlinedIcon from "@mui/icons-material/ReceiptLongOutlined";
 import ShoppingBasketOutlinedIcon from "@mui/icons-material/ShoppingBasketOutlined";
 import TrendingUpOutlinedIcon from "@mui/icons-material/TrendingUpOutlined";
 
-const stockMenus = [
-  {
-    label: "Kartu Persediaan",
-    icon: <Inventory2OutlinedIcon />,
-    href: "/dashboard/lihat/persediaan",
-  },
+const menuGroups = [
+  [
+    {
+      label: "Kartu Persediaan",
+      icon: <Inventory2OutlinedIcon />,
+      href: "/dashboard/lihat/persediaan",
+    },
+  ],
+  [
+    {
+      label: "Utang Semua Langganan",
+      icon: <CallMadeOutlinedIcon />,
+      href: "/dashboard/lihat/utang",
+    },
+    {
+      label: "Utang per Langganan",
+      icon: <CallMadeOutlinedIcon />,
+      href: "/dashboard/lihat/utang/langganan",
+    },
+    {
+      label: "Piutang Semua Langganan",
+      icon: <CallReceivedOutlinedIcon />,
+      href: "/dashboard/lihat/piutang",
+    },
+    {
+      label: "Piutang per Langganan",
+      icon: <CallReceivedOutlinedIcon />,
+      href: "/dashboard/lihat/piutang/langganan",
+    },
+  ],
+  [
+    {
+      label: "Nota Penjualan",
+      icon: <ReceiptLongOutlinedIcon />,
+      href: "/dashboard/lihat/nota/penjualan",
+    },
+    {
+      label: "Nota Pembelian",
+      icon: <ShoppingBasketOutlinedIcon />,
+      href: "/dashboard/lihat/nota/pembelian",
+    },
+  ],
+  [
+    {
+      label: "Laba",
+      icon: <TrendingUpOutlinedIcon />,
+      href: "/dashboard/lihat/laba",
+    },
+  ],
 ];
 
-const transactionMenus = [
-  {
-    label: "Utang Semua Langganan",
-    icon: <CallMadeOutlinedIcon />,
-    href: "/dashboard/lihat/utang",
-  },
-  {
-    label: "Utang per Langganan",
-    icon: <CallMadeOutlinedIcon />,
-    href: "/dashboard/lihat/utang/langganan",
-  },
-  {
-    label: "Piutang Semua Langganan",
-    icon: <CallReceivedOutlinedIcon />,
-    href: "/dashboard/lihat/piutang",
-  },
-  {
-    label: "Piutang per Langganan",
-    icon: <CallReceivedOutlinedIcon />,
-    href: "/dashboard/lihat/piutang/langganan",
-  },
-];
+function MenuList({ items }: { items: (typeof menuGroups)[number] }) {
+  return (
+    <List>
+      {items.map((menu) => (
+        <ListItem key={menu.label} disablePadding>
+          <ListItemButton href={menu.href}>
+            <ListItemIcon>{menu.icon}</ListItemIcon>
+            <ListItemText primary={menu.label} />
+          </ListItemButton>
+        </ListItem>
+      ))}
+    </List>
+  );
+}
 
-const notaMenus = [
-  {
-    label: "Nota Penjualan",
-    icon: <ReceiptLongOutlinedIcon />,
-    href: "/dashboard/lihat/nota/penjualan",
-  },
-  {
-    label: "Nota Pembelian",
-    icon: <ShoppingBasketOutlinedIcon />,
-    href: "/dashboard/lihat/nota/pembelian",
-  },
-];
-
-const profitMenus = [
-  {
-    label: "Laba",
-    icon: <TrendingUpOutlinedIcon />,
-    href: "/dashboard/lihat/laba",
-  },
-];
-
-export default function EditLayout({
+export default function LihatLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -101,50 +115,12 @@ export default function EditLayout({
           },
         }}
       >
-        <List>
-          {stockMenus.map((menu) => (
-            <ListItem key={menu.label} disablePadding>
-              <ListItemButton href={menu.href}>
-                <ListItemIcon>{menu.icon}</ListItemIcon>
-                <ListItemText primary={menu.label} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {transactionMenus.map((menu) => (
-            <ListItem key={menu.label} disablePadding>
-              <ListItemButton href={menu.href}>
-                <ListItemIcon>{menu.icon}</ListItemIcon>
-                <ListItemText primary={menu.label} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {notaMenus.map((menu) => (
-            <ListItem key={menu.label} disablePadding>
-              <ListItemButton href={menu.href}>
-                <ListItemIcon>{menu.icon}</ListItemIcon>
-                <ListItemText primary={menu.label} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {profitMenus.map((menu) => (
-            <ListItem key={menu.label} disablePadding>
-              <ListItemButton href={menu.href}>
-                <ListItemIcon>{menu.icon}</ListItemIcon>
-                <ListItemText primary={menu.label} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
+        {menuGroups.map((group, index) => (
+          <Fragment key={index}>
+            <MenuList items={group} />
+            <Divider />
+          </Fragment>
+        ))}
       </Drawer>
     </Box>
   );
