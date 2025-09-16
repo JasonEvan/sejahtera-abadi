@@ -1,5 +1,5 @@
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
@@ -26,8 +26,7 @@ export async function PUT(
 
     const validatedData = validate(data, schema);
 
-    const prisma = PrismaService.getInstance();
-    await prisma.client.update({
+    await db.client.update({
       where: { id },
       data: {
         nama_client: validatedData.nama_client,

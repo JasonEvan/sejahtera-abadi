@@ -1,5 +1,5 @@
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -7,9 +7,7 @@ export async function GET(request: NextRequest) {
   const namaClient = request.nextUrl.searchParams.get("namaClient") || "";
   const kotaClient = request.nextUrl.searchParams.get("kotaClient") || "";
   try {
-    const prisma = PrismaService.getInstance();
-
-    const client = await prisma.client.findUniqueOrThrow({
+    const client = await db.client.findUniqueOrThrow({
       where: {
         nama_client_kota_client: {
           nama_client: namaClient,
@@ -18,7 +16,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    const data = await prisma.jual.findMany({
+    const data = await db.jual.findMany({
       where: {
         nama_barang: {
           contains: namaBarang,

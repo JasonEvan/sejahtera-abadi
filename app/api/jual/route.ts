@@ -1,5 +1,5 @@
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { EditDTO, JualDTO } from "@/lib/types";
 import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
@@ -9,8 +9,7 @@ export async function GET(request: NextRequest) {
   const nota = request.nextUrl.searchParams.get("nota") || undefined;
 
   try {
-    const prisma = PrismaService.getInstance();
-    const data = await prisma.jual.findMany({
+    const data = await db.jual.findMany({
       where: {
         nomor_nota: nota,
       },
@@ -64,8 +63,7 @@ export async function POST(request: NextRequest) {
 
     const validatedData = validate(data, schema);
 
-    const prisma = PrismaService.getInstance();
-    await prisma.$transaction(async (tx) => {
+    await db.$transaction(async (tx) => {
       // Get ID client
       const client = await tx.client.findUnique({
         where: {
@@ -194,8 +192,7 @@ export async function PUT(request: NextRequest) {
 
     const validatedData = validate(data, schema);
 
-    const prisma = PrismaService.getInstance();
-    await prisma.$transaction(async (tx) => {
+    await db.$transaction(async (tx) => {
       // [1] validate if nomorNota exists in jretur
       const jretur = await tx.jretur.findFirst({
         where: {

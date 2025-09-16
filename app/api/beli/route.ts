@@ -1,5 +1,5 @@
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { BeliDTO, EditDTO } from "@/lib/types";
 import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
@@ -9,8 +9,7 @@ export async function GET(request: NextRequest) {
   const nota = request.nextUrl.searchParams.get("nota") || undefined;
 
   try {
-    const prisma = PrismaService.getInstance();
-    const data = await prisma.beli.findMany({
+    const data = await db.beli.findMany({
       where: {
         nomor_nota: nota,
       },
@@ -64,8 +63,7 @@ export async function POST(request: NextRequest) {
     const validatedData = validate(data, schema);
 
     // prisma transaction logic here
-    const prisma = PrismaService.getInstance();
-    await prisma.$transaction(async (tx) => {
+    await db.$transaction(async (tx) => {
       // Get ID client
       const client = await tx.client.findUnique({
         where: {
@@ -174,8 +172,7 @@ export async function PUT(request: NextRequest) {
 
     const validatedData = validate(data, schema);
 
-    const prisma = PrismaService.getInstance();
-    await prisma.$transaction(async (tx) => {
+    await db.$transaction(async (tx) => {
       // [1] validate if nomorNota exists in bretur
       const bretur = await tx.bretur.findFirst({
         where: {

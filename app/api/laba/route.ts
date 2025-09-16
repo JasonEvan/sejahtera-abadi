@@ -1,6 +1,6 @@
 import { formatDate } from "@/lib/formatter";
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { FormattedInvoice, LabaQueryResult, LaporanLaba } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -30,8 +30,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const prisma = PrismaService.getInstance();
-    const results: LabaQueryResult[] = await prisma.$queryRaw`
+    const results: LabaQueryResult[] = await db.$queryRaw`
       WITH CostOfGoodsSold AS (
         -- Langkah 1: Hitung total modal (harga beli) untuk setiap nomor nota.
         -- Ini adalah bagian yang paling intensif dan kita lakukan sekali saja di sini.

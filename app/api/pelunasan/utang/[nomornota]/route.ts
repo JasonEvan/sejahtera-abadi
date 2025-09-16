@@ -1,5 +1,5 @@
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { UpdatePelunasanDTO } from "@/lib/types";
 import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
@@ -12,8 +12,7 @@ export async function GET(
   try {
     const nomorNota = (await params).nomornota;
 
-    const prisma = PrismaService.getInstance();
-    const data = await prisma.blunas.findMany({
+    const data = await db.blunas.findMany({
       where: {
         nomor_nota: nomorNota,
       },
@@ -82,8 +81,7 @@ export async function PUT(
       0
     );
 
-    const prisma = PrismaService.getInstance();
-    await prisma.$transaction(async (tx) => {
+    await db.$transaction(async (tx) => {
       // Get the current nota value in database in order to calculate the new saldo
       const nota = await tx.bnota.findUniqueOrThrow({
         where: { nomor_nota: nomorNota },
@@ -170,8 +168,7 @@ export async function DELETE(
   try {
     const nomorNota = (await params).nomornota;
 
-    const prisma = PrismaService.getInstance();
-    await prisma.$transaction(async (tx) => {
+    await db.$transaction(async (tx) => {
       // Find pelunasan records by nomor_nota
       const paymentsToDelete = await tx.blunas.findMany({
         where: { nomor_nota: nomorNota },

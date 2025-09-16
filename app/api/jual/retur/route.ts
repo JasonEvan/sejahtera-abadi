@@ -1,6 +1,6 @@
 import { jual } from "@/app/generated/prisma";
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { ReturDTO } from "@/lib/types";
 import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
@@ -17,8 +17,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const prisma = PrismaService.getInstance();
-    const data = await prisma.jretur.findMany({
+    const data = await db.jretur.findMany({
       where: {
         nota: {
           lunas_nota: forMenu ? 0 : undefined,
@@ -78,8 +77,7 @@ export async function POST(request: NextRequest) {
       throw new Error("Tidak ada barang yang diretur.");
     }
 
-    const prisma = PrismaService.getInstance();
-    await prisma.$transaction(async (tx) => {
+    await db.$transaction(async (tx) => {
       // [1] Get Client ID and data nota lama
       const jualIds = dataToProcess.map((item) => item.id);
       const [client, notaLama, jualAsli] = await Promise.all([

@@ -1,5 +1,5 @@
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { SignJWT } from "jose";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -19,8 +19,7 @@ export async function POST(request: NextRequest) {
 
     const encodedPassword = btoa(password);
 
-    const prisma = PrismaService.getInstance();
-    const user = await prisma.user.findFirst({
+    const user = await db.user.findFirst({
       where: {
         email,
         password: encodedPassword,

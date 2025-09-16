@@ -1,5 +1,5 @@
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 function calculatePercentageChange(curr: number, prev: number): number {
@@ -34,7 +34,6 @@ export async function GET() {
     yesterday.setUTCDate(today.getUTCDate() - 1);
 
     // --- 2. Ambil data dari database ---
-    const prisma = PrismaService.getInstance();
     const [
       todaySales,
       yesterdaySales,
@@ -46,35 +45,35 @@ export async function GET() {
       topSellingProductsData,
     ] = await Promise.all([
       // Total sales hari ini
-      prisma.jual.aggregate({
+      db.jual.aggregate({
         _sum: { total_harga: true },
         where: { tanggal_nota: { gte: today, lt: tomorrow } },
       }),
       // Total sales kemarin
-      prisma.jual.aggregate({
+      db.jual.aggregate({
         _sum: { total_harga: true },
         where: { tanggal_nota: { gte: yesterday, lt: today } },
       }),
       // Jumlah transaksi hari ini
-      prisma.jnota.count({
+      db.jnota.count({
         where: { tanggal_nota: { gte: today, lt: tomorrow } },
       }),
       // Jumlah transaksi kemarin
-      prisma.jnota.count({
+      db.jnota.count({
         where: { tanggal_nota: { gte: yesterday, lt: today } },
       }),
       // Jumlah pelanggan aktif hari ini (unik)
-      prisma.jnota.findMany({
+      db.jnota.findMany({
         where: { tanggal_nota: { gte: today, lt: tomorrow } },
         distinct: ["id_client"],
       }),
       // Jumlah pelanggan aktif kemarin (unik)
-      prisma.jnota.findMany({
+      db.jnota.findMany({
         where: { tanggal_nota: { gte: yesterday, lt: today } },
         distinct: ["id_client"],
       }),
       // 5 transaksi terakhir
-      prisma.jnota.findMany({
+      db.jnota.findMany({
         take: 5,
         orderBy: { tanggal_nota: "desc" },
         include: {
@@ -84,7 +83,7 @@ export async function GET() {
         },
       }),
       // 3 produk terlaris hari ini
-      prisma.jual.groupBy({
+      db.jual.groupBy({
         by: ["nama_barang"],
         _sum: { qty_barang: true, total_harga: true },
         where: { tanggal_nota: { gte: today, lt: tomorrow } },

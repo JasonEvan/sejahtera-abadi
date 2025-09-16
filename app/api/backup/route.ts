@@ -1,5 +1,5 @@
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET() {
@@ -38,50 +38,48 @@ export async function GET() {
   }
 
   try {
-    const prisma = PrismaService.getInstance();
-
     // Get client
-    const clients = await prisma.client.findMany();
+    const clients = await db.client.findMany();
     sqlDump += makeInsert("client", clients);
 
     // Get salesman
-    const salesmen = await prisma.salesman.findMany();
+    const salesmen = await db.salesman.findMany();
     sqlDump += makeInsert("salesman", salesmen);
 
     // Get stock
-    const stocks = await prisma.stock.findMany();
+    const stocks = await db.stock.findMany();
     sqlDump += makeInsert("stock", stocks);
 
     // Get bnota
-    const bnotas = await prisma.bnota.findMany();
+    const bnotas = await db.bnota.findMany();
     sqlDump += makeInsert("bnota", bnotas);
 
     // Get jnota
-    const jnotas = await prisma.jnota.findMany();
+    const jnotas = await db.jnota.findMany();
     sqlDump += makeInsert("jnota", jnotas);
 
     // Get beli
-    const beli = await prisma.beli.findMany();
+    const beli = await db.beli.findMany();
     sqlDump += makeInsert("beli", beli);
 
     // Get jual
-    const jual = await prisma.jual.findMany();
+    const jual = await db.jual.findMany();
     sqlDump += makeInsert("jual", jual);
 
     // Get blunas
-    const blunas = await prisma.blunas.findMany();
+    const blunas = await db.blunas.findMany();
     sqlDump += makeInsert("blunas", blunas);
 
     // Get jlunas
-    const jlunas = await prisma.jlunas.findMany();
+    const jlunas = await db.jlunas.findMany();
     sqlDump += makeInsert("jlunas", jlunas);
 
     // Get bretur
-    const bretur = await prisma.bretur.findMany();
+    const bretur = await db.bretur.findMany();
     sqlDump += makeInsert("bretur", bretur);
 
     // Get jretur
-    const jretur = await prisma.jretur.findMany();
+    const jretur = await db.jretur.findMany();
     sqlDump += makeInsert("jretur", jretur);
 
     // Tambahkan setval untuk semua tabel yang punya auto increment
@@ -147,8 +145,7 @@ export async function POST(request: NextRequest) {
       .map((query) => query.trim())
       .filter((query) => query.length > 0);
 
-    const prisma = PrismaService.getInstance();
-    await prisma.$transaction(async (tx) => {
+    await db.$transaction(async (tx) => {
       // Clear existing data
       await tx.$executeRaw`TRUNCATE TABLE client, salesman, stock, bnota, jnota, beli, jual, blunas, jlunas, bretur, jretur RESTART IDENTITY CASCADE;`;
 
@@ -179,8 +176,7 @@ export async function POST(request: NextRequest) {
 
 export async function DELETE() {
   try {
-    const prisma = PrismaService.getInstance();
-    await prisma.$executeRaw`TRUNCATE TABLE client, salesman, stock, bnota, jnota, beli, jual, blunas, jlunas, bretur, jretur RESTART IDENTITY CASCADE;`;
+    await db.$executeRaw`TRUNCATE TABLE client, salesman, stock, bnota, jnota, beli, jual, blunas, jlunas, bretur, jretur RESTART IDENTITY CASCADE;`;
 
     logger.info("DELETE /api/backup succeeded. All data deleted.");
     return NextResponse.json({ message: "All data deleted successfully." });

@@ -1,5 +1,5 @@
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
@@ -61,8 +61,7 @@ export async function GET(request: NextRequest) {
       pelunasanFilter = 0;
     }
 
-    const prisma = PrismaService.getInstance();
-    const nota = await prisma.bnota.findMany({
+    const nota = await db.bnota.findMany({
       where: {
         // If notLunasOnly is true, filter where saldo is not 0
         saldo_nota: saldoFilter,

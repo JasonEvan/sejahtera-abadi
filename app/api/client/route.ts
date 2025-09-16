@@ -1,5 +1,5 @@
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
@@ -10,8 +10,7 @@ export async function GET(request: NextRequest) {
     request.nextUrl.searchParams.get("onlyclientsname") === "true";
 
   try {
-    const prisma = PrismaService.getInstance();
-    const clients = await prisma.client.findMany(
+    const clients = await db.client.findMany(
       onlyClientsName
         ? { select: { nama_client: true, kota_client: true } }
         : undefined
@@ -54,8 +53,7 @@ export async function POST(request: NextRequest) {
     });
     const validatedData = validate(body, schema);
 
-    const prisma = PrismaService.getInstance();
-    await prisma.client.create({
+    await db.client.create({
       data: {
         nama_client: validatedData.nama,
         kota_client: validatedData.kota ? validatedData.kota : "",

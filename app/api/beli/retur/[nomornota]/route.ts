@@ -1,6 +1,6 @@
 import { NotaI } from "@/hooks/useReturStore";
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
@@ -11,8 +11,7 @@ export async function GET(
 ) {
   try {
     const nomorNota = (await params).nomornota;
-    const prisma = PrismaService.getInstance();
-    const data = await prisma.beli.findMany({
+    const data = await db.beli.findMany({
       where: {
         nomor_nota: nomorNota,
       },
@@ -89,8 +88,7 @@ export async function PUT(
 
     const validatedData = validate(body, schema);
 
-    const prisma = PrismaService.getInstance();
-    await prisma.$transaction(async (tx) => {
+    await db.$transaction(async (tx) => {
       // Get Old Beli Data
       const [oldBeli, oldBnota, returLama] = await Promise.all([
         tx.beli.findFirstOrThrow({

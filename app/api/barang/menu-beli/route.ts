@@ -1,11 +1,10 @@
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    const prisma = PrismaService.getInstance();
-    const data = await prisma.stock.findMany({
+    const data = await db.stock.findMany({
       select: {
         nama_barang: true,
         jual_barang: true,

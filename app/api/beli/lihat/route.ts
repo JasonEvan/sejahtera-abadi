@@ -1,6 +1,6 @@
 import { formatDate } from "@/lib/formatter";
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { UtangTableRow } from "@/lib/types";
 import { NextResponse } from "next/server";
 
@@ -17,8 +17,7 @@ interface UtangQueryResult {
 
 export async function GET() {
   try {
-    const prisma = PrismaService.getInstance();
-    const results: UtangQueryResult[] = await prisma.$queryRaw`
+    const results: UtangQueryResult[] = await db.$queryRaw`
       SELECT 
         b.id_client, c.nama_client, c.kota_client,
         b.nomor_nota, b.tanggal_nota, b.nilai_nota,

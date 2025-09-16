@@ -1,6 +1,6 @@
 import { formatDate } from "@/lib/formatter";
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { DetailTransaksiTableRow } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -27,8 +27,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const prisma = PrismaService.getInstance();
-    const results: DetailPembelianQueryResult[] = await prisma.$queryRaw`
+    const results: DetailPembelianQueryResult[] = await db.$queryRaw`
       SELECT 
         b.nomor_nota, b.tanggal_nota, b.nama_barang, 
         b.qty_barang, b.harga_barang, b.total_harga,

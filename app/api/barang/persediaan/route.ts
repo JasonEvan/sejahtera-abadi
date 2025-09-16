@@ -1,6 +1,6 @@
 import { formatDate } from "@/lib/formatter";
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { TableRow } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -31,9 +31,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const prisma = PrismaService.getInstance();
-
-    const stocks = await prisma.stock.findFirstOrThrow({
+    const stocks = await db.stock.findFirstOrThrow({
       where: {
         nama_barang: namaBarang,
       },
@@ -44,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     const stockAwal = stocks.stock_awal;
 
-    const result: QueryResult[] = await prisma.$queryRaw`
+    const result: QueryResult[] = await db.$queryRaw`
       SELECT * FROM (
         SELECT 
           jual.*, 

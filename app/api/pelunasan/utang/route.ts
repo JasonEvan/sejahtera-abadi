@@ -1,5 +1,5 @@
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { PelunasanDTO } from "@/lib/types";
 import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
@@ -16,8 +16,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const prisma = PrismaService.getInstance();
-    const data = await prisma.blunas.findMany({
+    const data = await db.blunas.findMany({
       select,
     });
 
@@ -61,8 +60,7 @@ export async function POST(request: NextRequest) {
 
     const validatedData = validate(body, schema);
 
-    const prisma = PrismaService.getInstance();
-    await prisma.$transaction(async (tx) => {
+    await db.$transaction(async (tx) => {
       // Get ID client
       const client = await tx.client.findUnique({
         where: {

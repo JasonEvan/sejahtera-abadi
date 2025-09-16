@@ -1,5 +1,5 @@
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
@@ -10,11 +10,9 @@ export async function GET(request: NextRequest) {
   const namaSales = request.nextUrl.searchParams.get("namasales");
 
   try {
-    const prisma = PrismaService.getInstance();
-
     const whereClause = namaSales ? { nama_sales: namaSales } : {};
 
-    const salesmen = await prisma.salesman.findMany({
+    const salesmen = await db.salesman.findMany({
       where: whereClause,
       ...(onlySalesName
         ? {
@@ -55,8 +53,7 @@ export async function POST(request: NextRequest) {
     });
     const validatedData = validate(body, schema);
 
-    const prisma = PrismaService.getInstance();
-    await prisma.salesman.create({
+    await db.salesman.create({
       data: {
         nama_sales: validatedData.nama,
         no_depan: validatedData.nomordepan,

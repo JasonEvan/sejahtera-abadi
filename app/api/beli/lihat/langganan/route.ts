@@ -1,6 +1,6 @@
 import { formatDate } from "@/lib/formatter";
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { DetailUtangTableRow } from "@/lib/types";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -27,8 +27,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const prisma = PrismaService.getInstance();
-    const client = await prisma.client.findUnique({
+    const client = await db.client.findUnique({
       where: {
         nama_client_kota_client: {
           nama_client: nama,
@@ -52,7 +51,7 @@ export async function GET(request: NextRequest) {
 
     const idClient = client.id;
 
-    const results: DetailUtangQueryResult[] = await prisma.$queryRaw`
+    const results: DetailUtangQueryResult[] = await db.$queryRaw`
       SELECT 
         b.nomor_nota, 
         b.tanggal_nota, 

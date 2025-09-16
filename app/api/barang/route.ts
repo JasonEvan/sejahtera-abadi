@@ -1,5 +1,5 @@
 import logger from "@/lib/logger";
-import { PrismaService } from "@/lib/prisma";
+import db from "@/lib/prisma";
 import { TambahBarangFormValues } from "@/lib/types";
 import { validate } from "@/lib/zod";
 import { NextRequest, NextResponse } from "next/server";
@@ -7,8 +7,7 @@ import z from "zod";
 
 export async function GET() {
   try {
-    const prisma = PrismaService.getInstance();
-    const stocks = await prisma.stock.findMany({
+    const stocks = await db.stock.findMany({
       orderBy: {
         nama_barang: "asc",
       },
@@ -51,8 +50,7 @@ export async function POST(request: NextRequest) {
     const validatedData = validate(body, zodSchema);
 
     // Create a new PrismaService instance
-    const prisma = PrismaService.getInstance();
-    const result = await prisma.stock.create({
+    const result = await db.stock.create({
       data: {
         nama_barang: validatedData.nama,
         satuan_barang: validatedData.satuan,
