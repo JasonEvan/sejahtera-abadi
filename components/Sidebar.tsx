@@ -9,6 +9,7 @@ import ListAltIcon from "@mui/icons-material/ListAlt";
 import AssignmentReturnIcon from "@mui/icons-material/AssignmentReturn";
 import BackupIcon from "@mui/icons-material/Backup";
 import LogoutIcon from "@mui/icons-material/Logout";
+import StorageIcon from "@mui/icons-material/Storage";
 import { usePathname, useRouter } from "next/navigation";
 import { Box, Button, Typography } from "@mui/material";
 import Swal from "sweetalert2";
@@ -34,6 +35,7 @@ export const menus = [
   },
   { label: "Retur", path: "/dashboard/retur", icon: <AssignmentReturnIcon /> },
   { label: "Backup", path: "/dashboard/backup", icon: <BackupIcon /> },
+  { label: "Export", path: "/dashboard/export", icon: <StorageIcon /> },
 ];
 
 export default function Sidebar() {
