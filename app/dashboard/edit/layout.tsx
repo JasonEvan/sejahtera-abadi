@@ -21,64 +21,78 @@ import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import MenuOpenIcon from "@mui/icons-material/MenuOpen";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 
-const transactionMenus = [
-  {
-    label: "Jual",
-    icon: <SellOutlinedIcon />,
-    href: "/dashboard/edit/transaksi/penjualan",
-  },
-  {
-    label: "Beli",
-    icon: <AddShoppingCartOutlinedIcon />,
-    href: "/dashboard/edit/transaksi/pembelian",
-  },
+const menuGroups = [
+  [
+    {
+      label: "Jual",
+      icon: <SellOutlinedIcon />,
+      href: "/dashboard/edit/transaksi/penjualan",
+    },
+    {
+      label: "Beli",
+      icon: <AddShoppingCartOutlinedIcon />,
+      href: "/dashboard/edit/transaksi/pembelian",
+    },
+  ],
+  [
+    {
+      label: "Utang",
+      icon: <PaymentOutlinedIcon />,
+      href: "/dashboard/edit/pelunasan/utang",
+    },
+    {
+      label: "Piutang",
+      icon: <ReceiptLongOutlinedIcon />,
+      href: "/dashboard/edit/pelunasan/piutang",
+    },
+  ],
+  [
+    {
+      label: "Retur Beli",
+      icon: <ReplyOutlinedIcon />,
+      href: "/dashboard/edit/retur/beli",
+    },
+    {
+      label: "Retur Jual",
+      icon: <AssignmentReturnOutlinedIcon />,
+      href: "/dashboard/edit/retur/jual",
+    },
+  ],
+  [
+    {
+      label: "Client",
+      icon: <GroupOutlinedIcon />,
+      href: "/dashboard/edit/daftar/client",
+    },
+    {
+      label: "Salesman",
+      icon: <PersonAddOutlinedIcon />,
+      href: "/dashboard/edit/daftar/sales",
+    },
+    {
+      label: "Stock",
+      icon: <Inventory2OutlinedIcon />,
+      href: "/dashboard/edit/daftar/stock",
+    },
+  ],
 ];
 
-const pelunasanMenus = [
-  {
-    label: "Utang",
-    icon: <PaymentOutlinedIcon />,
-    href: "/dashboard/edit/pelunasan/utang",
-  },
-  {
-    label: "Piutang",
-    icon: <ReceiptLongOutlinedIcon />,
-    href: "/dashboard/edit/pelunasan/piutang",
-  },
-];
-
-const returMenus = [
-  {
-    label: "Retur Beli",
-    icon: <ReplyOutlinedIcon />,
-    href: "/dashboard/edit/retur/beli",
-  },
-  {
-    label: "Retur Jual",
-    icon: <AssignmentReturnOutlinedIcon />,
-    href: "/dashboard/edit/retur/jual",
-  },
-];
-
-const daftarMenus = [
-  {
-    label: "Client",
-    icon: <GroupOutlinedIcon />,
-    href: "/dashboard/edit/daftar/client",
-  },
-  {
-    label: "Salesman",
-    icon: <PersonAddOutlinedIcon />,
-    href: "/dashboard/edit/daftar/sales",
-  },
-  {
-    label: "Stock",
-    icon: <Inventory2OutlinedIcon />,
-    href: "/dashboard/edit/daftar/stock",
-  },
-];
+function MenuList({ items }: { items: (typeof menuGroups)[number] }) {
+  return (
+    <List>
+      {items.map((menu) => (
+        <ListItem key={menu.label} disablePadding>
+          <ListItemButton href={menu.href}>
+            <ListItemIcon>{menu.icon}</ListItemIcon>
+            <ListItemText primary={menu.label} />
+          </ListItemButton>
+        </ListItem>
+      ))}
+    </List>
+  );
+}
 
 export default function EditLayout({
   children,
@@ -107,50 +121,12 @@ export default function EditLayout({
           },
         }}
       >
-        <List>
-          {transactionMenus.map((menu) => (
-            <ListItem key={menu.label} disablePadding>
-              <ListItemButton href={menu.href}>
-                <ListItemIcon>{menu.icon}</ListItemIcon>
-                <ListItemText primary={menu.label} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {pelunasanMenus.map((menu) => (
-            <ListItem key={menu.label} disablePadding>
-              <ListItemButton href={menu.href}>
-                <ListItemIcon>{menu.icon}</ListItemIcon>
-                <ListItemText primary={menu.label} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {returMenus.map((menu) => (
-            <ListItem key={menu.label} disablePadding>
-              <ListItemButton href={menu.href}>
-                <ListItemIcon>{menu.icon}</ListItemIcon>
-                <ListItemText primary={menu.label} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
-        <List>
-          {daftarMenus.map((menu) => (
-            <ListItem key={menu.label} disablePadding>
-              <ListItemButton href={menu.href}>
-                <ListItemIcon>{menu.icon}</ListItemIcon>
-                <ListItemText primary={menu.label} />
-              </ListItemButton>
-            </ListItem>
-          ))}
-        </List>
-        <Divider />
+        {menuGroups.map((group, index) => (
+          <Fragment key={index}>
+            <MenuList items={group} />
+            <Divider />
+          </Fragment>
+        ))}
       </Drawer>
     </Box>
   );
