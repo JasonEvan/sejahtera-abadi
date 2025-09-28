@@ -21,6 +21,7 @@ export async function GET(request: NextRequest) {
             },
           }
         : undefined),
+      orderBy: { nama_sales: "asc" },
     });
 
     logger.info(`GET /api/sales succeeded. Found ${salesmen.length} items.`);

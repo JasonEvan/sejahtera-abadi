@@ -12,12 +12,14 @@ interface EditSalesFormProps extends salesman {
 export default function EditSalesForm({
   id,
   nama_sales,
+  no_nota,
   no_telp_sales,
   kode_sales,
   onSaveSuccess,
 }: EditSalesFormProps) {
   const validationSchema = Yup.object({
     namasales: Yup.string().required("Nama client is required"),
+    nonota: Yup.number().required("Nomor Nota is required").min(0),
     notelpsales: Yup.string(),
     kodesales: Yup.string(),
   });
@@ -25,6 +27,7 @@ export default function EditSalesForm({
   const formik = useFormik({
     initialValues: {
       namasales: nama_sales || "",
+      nonota: no_nota || 0,
       notelpsales: no_telp_sales || "",
       kodesales: kode_sales || "",
     },
@@ -37,6 +40,7 @@ export default function EditSalesForm({
           method: "PUT",
           body: JSON.stringify({
             nama_sales: values.namasales,
+            no_nota: values.nonota,
             no_telp_sales: values.notelpsales,
             kode_sales: values.kodesales,
           }),
@@ -77,6 +81,19 @@ export default function EditSalesForm({
         onBlur={formik.handleBlur}
         error={formik.touched.namasales && Boolean(formik.errors.namasales)}
         helperText={formik.touched.namasales && formik.errors.namasales}
+        sx={{ marginBottom: 2 }}
+      />
+      <TextField
+        fullWidth
+        type="number"
+        label="Nomor Nota"
+        variant="standard"
+        name="nonota"
+        value={formik.values.nonota}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+        error={formik.touched.nonota && Boolean(formik.errors.nonota)}
+        helperText={formik.touched.nonota && formik.errors.nonota}
         sx={{ marginBottom: 2 }}
       />
       <TextField
