@@ -35,14 +35,12 @@ export async function POST(request: NextRequest) {
   try {
     // Parse the request body
     const body: TambahBarangFormValues = await request.json();
-    console.log("Received data:", body);
 
     // Validate the incoming data using Zod
     const zodSchema = z.object({
       nama: z.string().min(1, "Nama barang is required"),
       satuan: z.string().min(1, "Satuan is required"),
       stockawal: z.number().min(0, "Stock awal cannot be negative"),
-      barangrusak: z.number().min(0, "Barang rusak cannot be negative"),
       modal: z.number().min(0, "Modal cannot be negative"),
       hargabeli: z.number().min(0, "Harga beli cannot be negative"),
       hargajual: z.number().min(0, "Harga jual cannot be negative").nullable(),
@@ -56,7 +54,6 @@ export async function POST(request: NextRequest) {
         satuan_barang: validatedData.satuan,
         stock_awal: validatedData.stockawal,
         stock_akhir: validatedData.stockawal,
-        rusak_barang: validatedData.barangrusak,
         modal: validatedData.modal,
         harga_barang: validatedData.hargabeli,
         jual_barang: validatedData.hargajual ? validatedData.hargajual : null, // Handle optional field

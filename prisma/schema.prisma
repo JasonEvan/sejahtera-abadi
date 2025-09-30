@@ -191,7 +191,6 @@ model stock {
   jual_barang   Int?
   satuan_barang String @db.VarChar(10)
   modal         Int
-  rusak_barang  Int    @default(0)
 }
 
 model User {

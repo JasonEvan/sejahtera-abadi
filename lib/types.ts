@@ -176,6 +176,7 @@ export interface DetailTransaksiTableRow {
   total_harga: string;
   nama_sales: string;
   kode_sales: string;
+  saldo_nota: number;
 }
 
 export interface LabaQueryResult {

@@ -1,15 +1,14 @@
 "use client";
 
 import FormNota from "@/components/lihat/nota/FormNota";
-import NotaTable from "@/components/lihat/nota/NotaTable";
+import PreviewNotaTable from "@/components/lihat/nota/PreviewNotaTable";
 import { DetailTransaksiTableRow } from "@/lib/types";
 import { Box, Typography } from "@mui/material";
 import { useState } from "react";
 import Swal from "sweetalert2";
 
-export default function NotaPembelianPage() {
+export default function PreviewNotaPembelianPage() {
   const [data, setData] = useState<DetailTransaksiTableRow[]>([]);
-  const [total, setTotal] = useState<string>("0");
 
   const handleSubmit = async (nomorNota: string) => {
     const params = {
@@ -26,9 +25,8 @@ export default function NotaPembelianPage() {
       throw new Error("Failed to fetch data");
     }
 
-    const { data, totalHargaSemua } = await response.json();
+    const { data } = await response.json();
     setData(data);
-    setTotal(totalHargaSemua);
   };
 
   const handleError = (error: string) => {
@@ -39,7 +37,6 @@ export default function NotaPembelianPage() {
       confirmButtonText: "OK",
     });
     setData([]);
-    setTotal("0");
   };
 
   return (
@@ -47,12 +44,8 @@ export default function NotaPembelianPage() {
       <Typography variant="h6" gutterBottom>
         Nota Pembelian
       </Typography>
-      <FormNota
-        handleSubmit={handleSubmit}
-        handleError={handleError}
-        setNomorNota={() => {}}
-      />
-      <NotaTable data={data} totalHargaSemua={total} />
+      <FormNota handleSubmit={handleSubmit} handleError={handleError} />
+      <PreviewNotaTable data={data} type="pembelian" />
     </Box>
   );
 }

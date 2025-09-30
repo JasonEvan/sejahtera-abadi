@@ -18,6 +18,7 @@ export async function PUT(
     const data = await request.json();
     const schema = z.object({
       nama_sales: z.string().min(1, "Nama Salesman is required"),
+      no_nota: z.number().min(0, "Nomer Nota must be a non-negative number"),
       no_telp_sales: z.string(),
       kode_sales: z.string(),
     });
@@ -28,6 +29,7 @@ export async function PUT(
       where: { id },
       data: {
         nama_sales: validatedData.nama_sales,
+        no_nota: validatedData.no_nota,
         no_telp_sales: validatedData.no_telp_sales,
         kode_sales: validatedData.kode_sales,
       },

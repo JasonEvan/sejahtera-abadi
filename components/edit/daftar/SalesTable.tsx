@@ -18,7 +18,7 @@ import Swal from "sweetalert2";
 import EditSalesForm from "./EditSalesForm";
 
 interface Column {
-  id: "nama_sales" | "no_depan" | "no_telp_sales" | "kode_sales" | "action";
+  id: "nama_sales" | "no_nota" | "no_telp_sales" | "kode_sales" | "action";
   label: string;
   minWidth?: number;
   align?: "right" | "left" | "center";
@@ -28,8 +28,8 @@ interface Column {
 const columns: readonly Column[] = [
   { id: "nama_sales", label: "Nama Salesman", minWidth: 75, align: "left" },
   {
-    id: "no_depan",
-    label: "Nomer Depan",
+    id: "no_nota",
+    label: "Nomer Nota",
     minWidth: 50,
     align: "right",
   },
@@ -57,7 +57,7 @@ export default function SalesTable() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
 
-  const [dataSales, setDatasales] = useState<salesman[]>([]);
+  const [dataSales, setDataSales] = useState<salesman[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -83,7 +83,7 @@ export default function SalesTable() {
       }
 
       const { data } = await response.json();
-      setDatasales(data);
+      setDataSales(data);
     } catch (error) {
       Swal.fire({
         icon: "error",
