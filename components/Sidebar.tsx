@@ -78,6 +78,7 @@ export default function Sidebar() {
         width: "230px",
         padding: 2,
         display: { xs: "none", sm: "none", md: "flex", lg: "flex" },
+        displayPrint: "none",
         flexDirection: "column",
       }}
     >
