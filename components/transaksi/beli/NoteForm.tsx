@@ -9,7 +9,7 @@ import {
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import { MenuBarangBeli, useBeliStore } from "@/hooks/useBeliStore";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export default function NoteForm() {
   const {
@@ -18,6 +18,7 @@ export default function NoteForm() {
     incrementalId,
     setDataPembelian,
   } = useBeliStore();
+  const autoCompleteRef = useRef<HTMLDivElement>(null);
 
   const validationSchema = Yup.object({
     namabarang: Yup.string().required("Nama barang is required"),
@@ -48,6 +49,8 @@ export default function NoteForm() {
         subtotal: values.jumlah * values.hargabeli,
       });
       formik.resetForm();
+      // focus to autocomplete
+      autoCompleteRef.current?.querySelector("input")?.focus();
     },
   });
 
@@ -67,6 +70,7 @@ export default function NoteForm() {
         <Grid container spacing={4} marginBottom={4}>
           <Grid size={{ xs: 12, sm: 12, md: 9, lg: 9 }}>
             <Autocomplete
+              ref={autoCompleteRef}
               disablePortal
               loading={menuBarangLoading}
               options={menuBarang}

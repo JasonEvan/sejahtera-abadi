@@ -8,7 +8,7 @@ import {
 } from "@mui/material";
 import * as Yup from "yup";
 import { useFormik } from "formik";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { MenuBarangJual, useJualStore } from "@/hooks/useJualStore";
 import Swal from "sweetalert2";
 
@@ -19,6 +19,7 @@ export default function NoteForm() {
     incrementalId,
     setDataPenjualan,
   } = useJualStore();
+  const autoCompleteRef = useRef<HTMLDivElement>(null);
 
   const isProfitable = (value: { modal: number; harga: number }) =>
     value.harga >= value.modal;
@@ -87,6 +88,9 @@ export default function NoteForm() {
       });
 
       formik.resetForm();
+
+      // focus to autocomplete
+      autoCompleteRef.current?.querySelector("input")?.focus();
     },
   });
 
@@ -107,6 +111,7 @@ export default function NoteForm() {
         <Grid container spacing={4} marginBottom={4}>
           <Grid size={{ xs: 12, sm: 12, md: 10, lg: 10 }}>
             <Autocomplete
+              ref={autoCompleteRef}
               disablePortal
               loading={menuBarangLoading}
               options={menuBarang}
