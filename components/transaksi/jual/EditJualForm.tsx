@@ -99,7 +99,7 @@ export default function EditJualForm({ row }: { row: DataPenjualanI }) {
         options={menuBarang}
         // gunakan getOptionLabel untuk memformat tampilan opsi
         getOptionLabel={(option) =>
-          `${option.nama_barang} || ${option.stock_akhir} || ${option.rusak_barang}`
+          `${option.nama_barang} || ${option.stock_akhir}`
         }
         value={
           menuBarang.find(
