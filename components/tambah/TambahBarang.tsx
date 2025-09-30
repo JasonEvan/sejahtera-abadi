@@ -19,9 +19,6 @@ export default function TambahBarang() {
     stockawal: Yup.number()
       .required("Stock awal is required")
       .min(0, "Stock awal cannot be negative"),
-    barangrusak: Yup.number()
-      .required("Barang rusak is required")
-      .min(0, "Barang rusak cannot be negative"),
     modal: Yup.number()
       .required("Modal is required")
       .min(0, "Modal cannot be negative"),
@@ -36,7 +33,6 @@ export default function TambahBarang() {
       nama: "",
       satuan: "",
       stockawal: 0,
-      barangrusak: 0,
       modal: 0,
       hargabeli: 0,
       hargajual: 0,
@@ -158,7 +154,7 @@ export default function TambahBarang() {
               helperText={formik.touched.satuan && formik.errors.satuan}
             />
           </Grid>
-          <Grid size={{ lg: 3, md: 3, sm: 12, xs: 12 }}>
+          <Grid size={{ lg: 6, md: 6, sm: 12, xs: 12 }}>
             <TextField
               label="Stock Awal"
               variant="outlined"
@@ -172,24 +168,6 @@ export default function TambahBarang() {
                 formik.touched.stockawal && Boolean(formik.errors.stockawal)
               }
               helperText={formik.touched.stockawal && formik.errors.stockawal}
-            />
-          </Grid>
-          <Grid size={{ lg: 3, md: 3, sm: 12, xs: 12 }}>
-            <TextField
-              label="Barang Rusak"
-              variant="outlined"
-              type="number"
-              sx={{ width: "100%" }}
-              name="barangrusak"
-              value={formik.values.barangrusak}
-              onChange={formik.handleChange}
-              onBlur={formik.handleBlur}
-              error={
-                formik.touched.barangrusak && Boolean(formik.errors.barangrusak)
-              }
-              helperText={
-                formik.touched.barangrusak && formik.errors.barangrusak
-              }
             />
           </Grid>
           <Grid size={{ lg: 6, md: 6, sm: 12, xs: 12 }}>

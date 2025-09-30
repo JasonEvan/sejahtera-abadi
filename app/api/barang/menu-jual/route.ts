@@ -10,7 +10,6 @@ export async function GET() {
         jual_barang: true,
         stock_akhir: true,
         modal: true,
-        rusak_barang: true,
       },
       orderBy: {
         nama_barang: "asc",

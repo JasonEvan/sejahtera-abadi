@@ -16,7 +16,6 @@ export interface MenuBarangJual {
   jual_barang: number;
   stock_akhir: number;
   modal: number;
-  rusak_barang: number;
 }
 
 interface JualStore {

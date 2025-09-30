@@ -16,7 +16,6 @@ export default function EditStockForm({
   jual_barang,
   satuan_barang,
   modal,
-  rusak_barang,
   onSaveSuccess,
 }: EditStockFormProps) {
   const validationSchema = Yup.object({
@@ -39,7 +38,6 @@ export default function EditStockForm({
       jualbarang: jual_barang || 0,
       satuan: satuan_barang || "",
       modal: modal || 0,
-      rusakbarang: rusak_barang || 0,
     },
     validationSchema,
     onSubmit: async (values, { setSubmitting }) => {
@@ -54,7 +52,6 @@ export default function EditStockForm({
             jual_barang: values.jualbarang,
             satuan_barang: values.satuan,
             modal: values.modal,
-            rusak_barang: values.rusakbarang,
           }),
         });
 
@@ -144,19 +141,6 @@ export default function EditStockForm({
         onBlur={formik.handleBlur}
         error={formik.touched.modal && Boolean(formik.errors.modal)}
         helperText={formik.touched.modal && formik.errors.modal}
-        sx={{ marginBottom: 2 }}
-      />
-      <TextField
-        fullWidth
-        type="number"
-        label="Rusak Barnag"
-        variant="standard"
-        name="rusakbarang"
-        value={formik.values.rusakbarang}
-        onChange={formik.handleChange}
-        onBlur={formik.handleBlur}
-        error={formik.touched.rusakbarang && Boolean(formik.errors.rusakbarang)}
-        helperText={formik.touched.rusakbarang && formik.errors.rusakbarang}
         sx={{ marginBottom: 2 }}
       />
       <DialogActions>

@@ -24,7 +24,6 @@ interface Column {
     | "jual_barang"
     | "satuan_barang"
     | "modal"
-    | "rusak_barang"
     | "action";
   label: string;
   minWidth?: number;
@@ -60,12 +59,6 @@ const columns: readonly Column[] = [
     minWidth: 100,
     align: "right",
     format: (value: number) => value.toLocaleString("id-ID"),
-  },
-  {
-    id: "rusak_barang",
-    label: "Rusak",
-    minWidth: 50,
-    align: "right",
   },
   {
     id: "action",

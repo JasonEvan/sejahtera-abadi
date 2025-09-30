@@ -22,7 +22,6 @@ export async function PUT(
       jual_barang: z.number().min(0, "Harga Jual must be a positive number"),
       satuan_barang: z.string().min(1, "Satuan Barang is required"),
       modal: z.number().min(0, "Modal must be a positive number"),
-      rusak_barang: z.number().min(0, "Rusak Barang must be a positive number"),
     });
 
     const validatedData = validate(data, schema);
@@ -35,7 +34,6 @@ export async function PUT(
         jual_barang: validatedData.jual_barang,
         satuan_barang: validatedData.satuan_barang,
         modal: validatedData.modal,
-        rusak_barang: validatedData.rusak_barang,
       },
     });
 

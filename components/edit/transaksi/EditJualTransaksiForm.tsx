@@ -9,8 +9,8 @@ import {
 } from "@mui/material";
 import { useEditJualStore } from "@/hooks/edit/useEditJualStore";
 import { modals } from "@/lib/modal";
-import { useMemo } from "react";
 import { EditNotaTransaksiI } from "@/lib/types";
+import { MenuBarangJual } from "@/hooks/useJualStore";
 
 export default function EditJualTransaksiForm({
   row,
@@ -18,6 +18,11 @@ export default function EditJualTransaksiForm({
   row: EditNotaTransaksiI;
 }) {
   const { menuBarang, menuBarangLoading, updateDataNota } = useEditJualStore();
+
+  const isProfitable = (namaBarang: string, harga: number): boolean => {
+    const barang = menuBarang.find((item) => item.nama_barang === namaBarang);
+    return barang ? harga >= barang.modal : false;
+  };
 
   const isPersediaanEnough = (
     newNamaBarang: string,
@@ -65,6 +70,13 @@ export default function EditJualTransaksiForm({
         return;
       }
 
+      if (!isProfitable(values.namabarang, values.harga)) {
+        const confirmed: boolean = confirm(
+          "Harga jual kurang dari modal. Apakah Anda yakin ingin melanjutkan?"
+        );
+        if (!confirmed) return;
+      }
+
       updateDataNota({
         ...row,
         nama_barang: values.namabarang,
@@ -76,21 +88,28 @@ export default function EditJualTransaksiForm({
     },
   });
 
-  const namaBarangOptions = useMemo(() => {
-    return menuBarang.map((item) => item.nama_barang);
-  }, [menuBarang]);
-
   return (
     <form className="w-full" onSubmit={formik.handleSubmit}>
       <Autocomplete
         disablePortal
         loading={menuBarangLoading}
-        value={formik.values.namabarang}
-        onChange={(event, newValue) => {
-          formik.setFieldValue("namabarang", newValue || "");
+        options={menuBarang}
+        // gunakan getOptionLabel untuk memformat tampilan opsi
+        getOptionLabel={(option) =>
+          `${option.nama_barang} || ${option.stock_akhir}`
+        }
+        value={
+          menuBarang.find(
+            (item) => item.nama_barang === formik.values.namabarang
+          ) || null
+        }
+        onChange={(event, newValue: MenuBarangJual | null) => {
+          formik.setFieldValue("namabarang", newValue?.nama_barang || "");
         }}
         onBlur={() => formik.setFieldTouched("namabarang", true)}
-        options={namaBarangOptions}
+        isOptionEqualToValue={(option, value) =>
+          option.nama_barang === value.nama_barang
+        }
         renderInput={(params) => (
           <TextField
             {...params}
