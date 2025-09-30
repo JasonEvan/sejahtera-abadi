@@ -17,6 +17,7 @@ interface DetailPenjualanQueryResult {
   total_harga: number;
   nama_sales: string;
   kode_sales: string;
+  saldo_nota: number;
 }
 
 export async function GET(request: NextRequest) {
@@ -44,9 +45,12 @@ export async function GET(request: NextRequest) {
         c.nama_client, 
         c.kota_client, 
         c.alamat_client, 
-        s.kode_sales
+        s.kode_sales, 
+        jn.saldo_nota 
       FROM 
         jual j
+      JOIN
+        jnota jn ON j.nomor_nota = jn.nomor_nota
       JOIN
         salesman s ON j.nama_sales = s.nama_sales
       JOIN
@@ -56,17 +60,14 @@ export async function GET(request: NextRequest) {
       WHERE 
         j.nomor_nota LIKE ${nomorNota + "%"}
       ORDER BY 
-        j.tanggal_nota;
+        j.nomor_nota ASC;
     `;
 
     const initialState = {
       tableRows: [] as DetailTransaksiTableRow[],
-      totalHargaSemua: 0,
     };
 
     const processedData = results.reduce((acc, curr) => {
-      acc.totalHargaSemua += curr.total_harga;
-
       const formattedRow: DetailTransaksiTableRow = {
         nomor_nota: curr.nomor_nota,
         tanggal_nota: formatDate(curr.tanggal_nota),
@@ -80,6 +81,7 @@ export async function GET(request: NextRequest) {
         total_harga: curr.total_harga.toLocaleString("id-ID"),
         nama_sales: curr.nama_sales,
         kode_sales: curr.kode_sales,
+        saldo_nota: curr.saldo_nota,
       };
 
       acc.tableRows.push(formattedRow);
@@ -92,7 +94,6 @@ export async function GET(request: NextRequest) {
     );
     return NextResponse.json({
       data: processedData.tableRows,
-      totalHargaSemua: processedData.totalHargaSemua.toLocaleString("id-ID"),
     });
   } catch (error) {
     logger.error(

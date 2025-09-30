@@ -1,17 +1,14 @@
 "use client";
 
 import FormNota from "@/components/lihat/nota/FormNota";
-import NotaTable from "@/components/lihat/nota/NotaTable";
-import { rupiahToString } from "@/lib/rupiahToString";
+import PreviewNotaTable from "@/components/lihat/nota/PreviewNotaTable";
 import { DetailTransaksiTableRow } from "@/lib/types";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { useState } from "react";
 import Swal from "sweetalert2";
 
-export default function NotaPenjualanPage() {
+export default function PreviewNotaPenjualanPage() {
   const [data, setData] = useState<DetailTransaksiTableRow[]>([]);
-  const [total, setTotal] = useState<string>("0");
-  const [nomorNota, setNomorNota] = useState<string>("");
 
   const handleSubmit = async (nomorNota: string) => {
     const params = {
@@ -28,9 +25,8 @@ export default function NotaPenjualanPage() {
       throw new Error("Failed to fetch data");
     }
 
-    const { data, totalHargaSemua } = await response.json();
+    const { data } = await response.json();
     setData(data);
-    setTotal(totalHargaSemua);
   };
 
   const handleError = (error: string) => {
@@ -41,59 +37,15 @@ export default function NotaPenjualanPage() {
       confirmButtonText: "OK",
     });
     setData([]);
-    setTotal("0");
   };
 
   return (
     <Box>
-      <style>{`
-        @media print {
-          @page {
-            size: 21.7cm 14cm;
-            margin: 0;
-            margin-bottom: 2.5cm;
-          }
-        }
-      `}</style>
-
       <Typography variant="h6" gutterBottom sx={{ displayPrint: "none" }}>
         Nota Penjualan
       </Typography>
-      <FormNota
-        handleSubmit={handleSubmit}
-        handleError={handleError}
-        setNomorNota={setNomorNota}
-      />
-
-      {nomorNota.length === 6 && data.length > 0 && (
-        <Button
-          variant="contained"
-          color="info"
-          onClick={() => window.print()}
-          sx={{ marginY: 2, displayPrint: "none" }}
-        >
-          Print
-        </Button>
-      )}
-
-      <NotaTable data={data} totalHargaSemua={total} />
-
-      {data.length > 0 && (
-        <Box sx={{ display: "none", displayPrint: "block" }}>
-          <Typography
-            variant="caption"
-            align="left"
-            sx={{
-              marginLeft: 2,
-              marginTop: 1,
-              fontFamily: "monospace",
-              fontSize: "10px",
-            }}
-          >
-            {rupiahToString(parseInt(total.replaceAll(".", "")))} rupiah
-          </Typography>
-        </Box>
-      )}
+      <FormNota handleSubmit={handleSubmit} handleError={handleError} />
+      <PreviewNotaTable data={data} type="penjualan" />
     </Box>
   );
 }

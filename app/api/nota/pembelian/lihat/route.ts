@@ -11,8 +11,10 @@ interface DetailPembelianQueryResult {
   kota_client: string | null;
   nama_barang: string;
   qty_barang: number;
+  satuan_barang: string;
   harga_barang: number;
   total_harga: number;
+  saldo_nota: number;
 }
 
 export async function GET(request: NextRequest) {
@@ -31,25 +33,27 @@ export async function GET(request: NextRequest) {
       SELECT 
         b.nomor_nota, b.tanggal_nota, b.nama_barang, 
         b.qty_barang, b.harga_barang, b.total_harga,
-        c.nama_client, c.kota_client
+        c.nama_client, c.kota_client, bn.saldo_nota, 
+        st.satuan_barang 
       FROM 
         beli b
+      JOIN
+        stock st ON b.nama_barang = st.nama_barang
+      JOIN
+        bnota bn ON b.nomor_nota = bn.nomor_nota 
       LEFT JOIN 
         client c ON b.id_client = c.id
       WHERE 
         b.nomor_nota LIKE ${nomorNota + "%"}
       ORDER BY 
-        b.tanggal_nota;
+        b.tanggal_nota ASC, b.nomor_nota ASC;
     `;
 
     const initialState = {
       tableRows: [] as DetailTransaksiTableRow[],
-      totalHargaSemua: 0,
     };
 
     const processedData = results.reduce((acc, curr) => {
-      acc.totalHargaSemua += curr.total_harga;
-
       const formattedRow: DetailTransaksiTableRow = {
         nomor_nota: curr.nomor_nota,
         tanggal_nota: formatDate(curr.tanggal_nota),
@@ -58,11 +62,12 @@ export async function GET(request: NextRequest) {
         alamat_client: "",
         nama_barang: curr.nama_barang,
         qty_barang: curr.qty_barang,
-        satuan_barang: "",
+        satuan_barang: curr.satuan_barang,
         harga_barang: curr.harga_barang.toLocaleString("id-ID"),
         total_harga: curr.total_harga.toLocaleString("id-ID"),
         nama_sales: "",
         kode_sales: "",
+        saldo_nota: curr.saldo_nota,
       };
 
       acc.tableRows.push(formattedRow);
@@ -75,7 +80,6 @@ export async function GET(request: NextRequest) {
     );
     return NextResponse.json({
       data: processedData.tableRows,
-      totalHargaSemua: processedData.totalHargaSemua.toLocaleString("id-ID"),
     });
   } catch (error) {
     logger.error(
