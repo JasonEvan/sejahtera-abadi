@@ -1,8 +1,9 @@
 import { usePersediaanStore } from "@/hooks/lihat/usePersediaanStore";
-import { PersediaanDTO } from "@/lib/types";
+import { getMenuBeli, getPersediaan } from "@/service/barangService";
 import { Autocomplete, Button, Grid, TextField } from "@mui/material";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { useFormik } from "formik";
-import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
 type FormPersediaanProps = {
@@ -10,97 +11,65 @@ type FormPersediaanProps = {
 };
 
 export default function FormPersediaan({ setBarang }: FormPersediaanProps) {
-  const [namaBarang, setNamaBarang] = useState<string[]>([]);
-  const [menuBarangLoading, setMenuBarangLoading] = useState<boolean>(false);
   const setData = usePersediaanStore((state) => state.setData);
-  const data = usePersediaanStore((state) => state.data);
+  const dataTable = usePersediaanStore((state) => state.data);
+
+  const {
+    data: namaBarang,
+    isLoading: menuBarangLoading,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["barang", "menu-beli"],
+    queryFn: getMenuBeli,
+  });
+
+  if (isError) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text:
+        error instanceof Error
+          ? error.message
+          : "An unexpected error occurred while fetching menu barang.",
+      confirmButtonText: "OK",
+    });
+  }
+
+  const persediaanMutation = useMutation({
+    mutationFn: getPersediaan,
+    onSuccess: (data) => {
+      setData(data.data, data.summary);
+    },
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.message
+          : "An unexpected error occurred while fetching persediaan data.";
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMessage,
+        confirmButtonText: "OK",
+      });
+      setData([], {
+        totalQtyIn: 0,
+        totalQtyOut: 0,
+        stockAwal: 0,
+        finalStock: 0,
+      });
+    },
+  });
 
   const formik = useFormik({
     initialValues: {
       namabarang: "",
     },
-    onSubmit: async (values, { setSubmitting }) => {
-      try {
-        setSubmitting(true);
-        setBarang(values.namabarang);
-
-        const params = {
-          namabarang: values.namabarang,
-        };
-
-        const queryParams = new URLSearchParams(params);
-        const response = await fetch(
-          `/api/barang/persediaan?${queryParams.toString()}`,
-          {
-            cache: "no-store",
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch persediaan data");
-        }
-
-        const { data, summary }: PersediaanDTO = await response.json();
-
-        setData(data, summary);
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text:
-            error instanceof Error
-              ? error.message
-              : "An unexpected error occurred while fetching persediaan data.",
-          confirmButtonText: "OK",
-        });
-        setData([], {
-          totalQtyIn: 0,
-          totalQtyOut: 0,
-          stockAwal: 0,
-          finalStock: 0,
-        });
-      } finally {
-        setSubmitting(false);
-      }
+    onSubmit: (values) => {
+      setBarang(values.namabarang);
+      persediaanMutation.mutate(values.namabarang);
     },
   });
-
-  useEffect(() => {
-    async function fetchBarang() {
-      try {
-        setMenuBarangLoading(true);
-        const response = await fetch("/api/barang/menu-beli", {
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch barang");
-        }
-
-        const {
-          data,
-        }: { data: { nama_barang: string; jual_barang: number }[] } =
-          await response.json();
-
-        setNamaBarang(data.map((item) => item.nama_barang));
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text:
-            error instanceof Error
-              ? error.message
-              : "An unexpected error occurred while fetching barang.",
-          confirmButtonText: "OK",
-        });
-        setNamaBarang([]);
-      } finally {
-        setMenuBarangLoading(false);
-      }
-    }
-
-    fetchBarang();
-  }, []);
 
   return (
     <>
@@ -120,7 +89,7 @@ export default function FormPersediaan({ setBarang }: FormPersediaanProps) {
                 formik.setFieldValue("namabarang", newValue || "");
               }}
               onBlur={() => formik.setFieldTouched("namabarang", true)}
-              options={namaBarang}
+              options={namaBarang?.map((item) => item.nama_barang) || []}
               renderInput={(params) => (
                 <TextField
                   {...params}
@@ -142,13 +111,13 @@ export default function FormPersediaan({ setBarang }: FormPersediaanProps) {
         <Button
           type="submit"
           variant="contained"
-          loading={formik.isSubmitting}
+          loading={persediaanMutation.isPending}
           sx={{ displayPrint: "none" }}
         >
           Search
         </Button>
       </form>
-      {data.length > 0 && (
+      {dataTable.length > 0 && (
         <Button
           variant="contained"
           color="info"
