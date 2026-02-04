@@ -11,6 +11,9 @@ import {
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import Swal from "sweetalert2";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { tambahBarang } from "@/service/tambah/barangService";
+import { AxiosError } from "axios";
 
 export default function TambahBarang() {
   const validationSchema = Yup.object({
@@ -28,6 +31,34 @@ export default function TambahBarang() {
     hargajual: Yup.number().min(0, "Harga jual cannot be negative"),
   });
 
+  const queryClient = useQueryClient();
+  const tambahBarangMutation = useMutation({
+    mutationFn: tambahBarang,
+    onSuccess: (data) => {
+      Swal.fire({
+        title: "Success",
+        text: data.message,
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+      queryClient.invalidateQueries({ queryKey: ["barang"] });
+      formik.resetForm();
+    },
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.message
+          : "An unexpected error occurred";
+      Swal.fire({
+        title: "Error",
+        text: errorMessage,
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      console.error("Error adding barang:", error);
+    },
+  });
+
   const formik = useFormik({
     initialValues: {
       nama: "",
@@ -38,86 +69,24 @@ export default function TambahBarang() {
       hargajual: 0,
     },
     validationSchema,
-    onSubmit: (values) => {
+    onSubmit: async (values) => {
       // Ask for confirmation if harga jual is less than harga beli
       if (values.hargajual < values.hargabeli && values.hargajual > 0) {
-        Swal.fire({
+        const result = await Swal.fire({
           title: "Warning",
           text: "Harga jual is less than harga beli. Are you sure you want to proceed?",
           icon: "warning",
           showCancelButton: true,
           confirmButtonText: "Yes",
           cancelButtonText: "No",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            fetch("/api/barang", {
-              cache: "no-store",
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(values),
-            })
-              .then((response) => {
-                if (response.status !== 201) {
-                  throw new Error("Failed to add barang");
-                }
-                return response.json();
-              })
-              .then((data) => {
-                Swal.fire({
-                  title: "Success",
-                  text: data.message,
-                  icon: "success",
-                  confirmButtonText: "OK",
-                });
-                formik.resetForm();
-              })
-              .catch((error) => {
-                Swal.fire({
-                  title: "Error",
-                  text: error.message,
-                  icon: "error",
-                  confirmButtonText: "OK",
-                });
-                console.error("Error adding barang:", error);
-              });
-          }
         });
-      } else {
-        fetch("/api/barang", {
-          cache: "no-store",
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(values),
-        })
-          .then((response) => {
-            if (response.status !== 201) {
-              throw new Error("Failed to add barang");
-            }
-            return response.json();
-          })
-          .then((data) => {
-            Swal.fire({
-              title: "Success",
-              text: data.message,
-              icon: "success",
-              confirmButtonText: "OK",
-            });
-            formik.resetForm();
-          })
-          .catch((error) => {
-            Swal.fire({
-              title: "Error",
-              text: error.message,
-              icon: "error",
-              confirmButtonText: "OK",
-            });
-            console.error("Error adding barang:", error);
-          });
+
+        if (!result.isConfirmed) {
+          return;
+        }
       }
+
+      tambahBarangMutation.mutate(values);
     },
   });
 
@@ -238,8 +207,12 @@ export default function TambahBarang() {
             />
           </Grid>
         </Grid>
-        <Button variant="contained" type="submit">
-          Submit
+        <Button
+          variant="contained"
+          type="submit"
+          disabled={tambahBarangMutation.isPending}
+        >
+          {tambahBarangMutation.isPending ? "Submitting..." : "Submit"}
         </Button>
       </form>
     </Box>

@@ -4,6 +4,9 @@ import { Box, Button, Grid, TextField, Typography } from "@mui/material";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import Swal from "sweetalert2";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { tambahSales } from "@/service/tambah/salesService";
+import { AxiosError } from "axios";
 
 export default function TambahSalesman() {
   const validationSchema = Yup.object({
@@ -15,6 +18,34 @@ export default function TambahSalesman() {
     kode: Yup.string().required("Kode is required"),
   });
 
+  const queryClient = useQueryClient();
+  const tambahSalesMutation = useMutation({
+    mutationFn: tambahSales,
+    onSuccess: (data) => {
+      Swal.fire({
+        title: "Success",
+        text: data.message,
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+      queryClient.invalidateQueries({ queryKey: ["salesman"] });
+      formik.resetForm();
+    },
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.message
+          : "An unexpected error occurred";
+      Swal.fire({
+        title: "Error",
+        text: errorMessage,
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      console.error("Error adding salesman:", error);
+    },
+  });
+
   const formik = useFormik({
     initialValues: {
       nama: "",
@@ -24,37 +55,7 @@ export default function TambahSalesman() {
     },
     validationSchema,
     onSubmit: (values) => {
-      fetch("/api/sales", {
-        cache: "no-store",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      })
-        .then((response) => {
-          if (response.status !== 201) {
-            throw new Error("Network response was not ok");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          Swal.fire({
-            title: "Success",
-            text: data.message || "Salesman added successfully",
-            icon: "success",
-            confirmButtonText: "OK",
-          });
-          formik.resetForm();
-        })
-        .catch((error) => {
-          Swal.fire({
-            title: "Error",
-            text: error.message,
-            icon: "error",
-            confirmButtonText: "OK",
-          });
-        });
+      tambahSalesMutation.mutate(values);
     },
   });
 
@@ -121,8 +122,12 @@ export default function TambahSalesman() {
             />
           </Grid>
         </Grid>
-        <Button variant="contained" type="submit">
-          Submit
+        <Button
+          variant="contained"
+          type="submit"
+          disabled={tambahSalesMutation.isPending}
+        >
+          {tambahSalesMutation.isPending ? "Submitting..." : "Submit"}
         </Button>
       </form>
     </Box>

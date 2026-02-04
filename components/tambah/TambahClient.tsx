@@ -4,6 +4,9 @@ import { Box, Button, Grid, TextField, Typography } from "@mui/material";
 import * as Yup from "yup";
 import { useFormik } from "formik";
 import Swal from "sweetalert2";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { tambahClient } from "@/service/tambah/clientService";
+import { AxiosError } from "axios";
 
 export default function TambahClient() {
   const validationSchema = Yup.object({
@@ -12,6 +15,34 @@ export default function TambahClient() {
     alamat: Yup.string().nullable(),
     telepon: Yup.string().nullable(),
     handphone: Yup.string().nullable(),
+  });
+
+  const queryClient = useQueryClient();
+  const tambahClientMutation = useMutation({
+    mutationFn: tambahClient,
+    onSuccess: (data) => {
+      Swal.fire({
+        title: "Success",
+        text: data.message,
+        icon: "success",
+        confirmButtonText: "OK",
+      });
+      queryClient.invalidateQueries({ queryKey: ["client"] });
+      formik.resetForm();
+    },
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.message
+          : "An unexpected error occurred";
+      Swal.fire({
+        title: "Error",
+        text: errorMessage,
+        icon: "error",
+        confirmButtonText: "OK",
+      });
+      console.error("Error adding client:", error);
+    },
   });
 
   const formik = useFormik({
@@ -24,37 +55,7 @@ export default function TambahClient() {
     },
     validationSchema,
     onSubmit: (values) => {
-      fetch("/api/client", {
-        cache: "no-store",
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      })
-        .then((response) => {
-          if (response.status !== 201) {
-            throw new Error("Failed to add client");
-          }
-          return response.json();
-        })
-        .then((data) => {
-          Swal.fire({
-            title: "Success",
-            text: data.message,
-            icon: "success",
-            confirmButtonText: "OK",
-          });
-          formik.resetForm();
-        })
-        .catch((error) => {
-          Swal.fire({
-            title: "Error",
-            text: error.message || "An unexpected error occurred.",
-            icon: "error",
-            confirmButtonText: "OK",
-          });
-        });
+      tambahClientMutation.mutate(values);
     },
   });
 
@@ -133,8 +134,12 @@ export default function TambahClient() {
             />
           </Grid>
         </Grid>
-        <Button variant="contained" type="submit">
-          Submit
+        <Button
+          variant="contained"
+          type="submit"
+          disabled={tambahClientMutation.isPending}
+        >
+          {tambahClientMutation.isPending ? "Submitting..." : "Submit"}
         </Button>
       </form>
     </Box>
