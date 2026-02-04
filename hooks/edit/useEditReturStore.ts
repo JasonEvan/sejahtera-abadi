@@ -1,6 +1,7 @@
 import Swal from "sweetalert2";
 import { create } from "zustand";
 import { NotaI } from "../useReturStore";
+import api from "@/lib/axios";
 
 interface EditReturStore {
   nomorNota: string;
@@ -25,7 +26,7 @@ interface EditReturStore {
   returBarang: (
     data: NotaI,
     jumlahReturBaru: number,
-    jumlahReturSebelum: number
+    jumlahReturSebelum: number,
   ) => void;
 
   submitEditRetur: () => Promise<void>;
@@ -52,17 +53,13 @@ export const useEditReturJualStore = create<EditReturStore>((set, get) => ({
     try {
       set({ nomorNotaLoading: true });
 
-      const response = await fetch("/api/jual/retur?formenu=true", {
-        cache: "no-store",
+      const response = await api.get<{ data: { nomor_nota: string }[] }>(
+        "/jual/retur?formenu=true",
+      );
+
+      set({
+        nomorNotaOption: response.data.data.map((item) => item.nomor_nota),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch nomor nota options");
-      }
-
-      const { data }: { data: { nomor_nota: string }[] } =
-        await response.json();
-      set({ nomorNotaOption: data.map((item) => item.nomor_nota) });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -84,15 +81,10 @@ export const useEditReturJualStore = create<EditReturStore>((set, get) => ({
     try {
       set({ dataReturLoading: true });
 
-      const response = await fetch(`/api/jual/retur/${nomorNota}`, {
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch retur data");
-      }
-
-      const { data }: { data: NotaI[] } = await response.json();
+      const response = await api.get<{ data: NotaI[] }>(
+        `/jual/retur/${nomorNota}`,
+      );
+      const { data } = response.data;
 
       const nilaiNota = data.reduce((acc, curr) => acc + curr.total_harga, 0);
       const totalAkhir =
@@ -100,7 +92,7 @@ export const useEditReturJualStore = create<EditReturStore>((set, get) => ({
 
       const nilaiRetur = data.reduce(
         (acc, curr) => acc + curr.retur_barang * curr.harga_barang,
-        0
+        0,
       );
       const nilaiReturSetelahDiskon =
         nilaiRetur - (nilaiRetur * (data[0].diskon_nota || 0)) / 100;
@@ -143,7 +135,7 @@ export const useEditReturJualStore = create<EditReturStore>((set, get) => ({
                 total_harga:
                   item.harga_barang * (item.qty_barang - selisihQtyRetur),
               }
-            : item
+            : item,
         ),
         totalAkhir: state.totalAkhir - selisihNilaiNet,
         nilaiRetur: state.nilaiRetur + selisihNilaiNet,
@@ -155,23 +147,16 @@ export const useEditReturJualStore = create<EditReturStore>((set, get) => ({
     try {
       set({ isSubmitting: true });
 
-      const response = await fetch(`/api/jual/retur/${get().nomorNota}`, {
-        cache: "no-store",
-        method: "PUT",
-        body: JSON.stringify({
+      const response = await api.put<{ message: string }>(
+        `/jual/retur/${get().nomorNota}`,
+        {
           dataRetur: get().dataRetur,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update retur data");
-      }
-
-      const { message } = await response.json();
+        },
+      );
       Swal.fire({
         icon: "success",
         title: "Success",
-        text: message,
+        text: response.data.message,
         confirmButtonText: "OK",
       });
 
@@ -225,17 +210,13 @@ export const useEditReturBeliStore = create<EditReturStore>((set, get) => ({
     try {
       set({ nomorNotaLoading: true });
 
-      const response = await fetch("/api/beli/retur?formenu=true", {
-        cache: "no-store",
+      const response = await api.get<{ data: { nomor_nota: string }[] }>(
+        "/beli/retur?formenu=true",
+      );
+
+      set({
+        nomorNotaOption: response.data.data.map((item) => item.nomor_nota),
       });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch nomor nota options");
-      }
-
-      const { data }: { data: { nomor_nota: string }[] } =
-        await response.json();
-      set({ nomorNotaOption: data.map((item) => item.nomor_nota) });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -257,15 +238,10 @@ export const useEditReturBeliStore = create<EditReturStore>((set, get) => ({
     try {
       set({ dataReturLoading: true });
 
-      const response = await fetch(`/api/beli/retur/${nomorNota}`, {
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch retur data");
-      }
-
-      const { data }: { data: NotaI[] } = await response.json();
+      const response = await api.get<{ data: NotaI[] }>(
+        `/beli/retur/${nomorNota}`,
+      );
+      const { data } = response.data;
 
       const nilaiNota = data.reduce((acc, curr) => acc + curr.total_harga, 0);
       const totalAkhir =
@@ -273,7 +249,7 @@ export const useEditReturBeliStore = create<EditReturStore>((set, get) => ({
 
       const nilaiRetur = data.reduce(
         (acc, curr) => acc + curr.retur_barang * curr.harga_barang,
-        0
+        0,
       );
       const nilaiReturSetelahDiskon =
         nilaiRetur - (nilaiRetur * (data[0].diskon_nota || 0)) / 100;
@@ -316,7 +292,7 @@ export const useEditReturBeliStore = create<EditReturStore>((set, get) => ({
                 total_harga:
                   item.harga_barang * (item.qty_barang - selisihQtyRetur),
               }
-            : item
+            : item,
         ),
         totalAkhir: state.totalAkhir - selisihNilaiNet,
         nilaiRetur: state.nilaiRetur + selisihNilaiNet,
@@ -328,23 +304,17 @@ export const useEditReturBeliStore = create<EditReturStore>((set, get) => ({
     try {
       set({ isSubmitting: true });
 
-      const response = await fetch(`/api/beli/retur/${get().nomorNota}`, {
-        cache: "no-store",
-        method: "PUT",
-        body: JSON.stringify({
+      const response = await api.put<{ message: string }>(
+        `/beli/retur/${get().nomorNota}`,
+        {
           dataRetur: get().dataRetur,
-        }),
-      });
+        },
+      );
 
-      if (!response.ok) {
-        throw new Error("Failed to update retur data");
-      }
-
-      const { message } = await response.json();
       Swal.fire({
         icon: "success",
         title: "Success",
-        text: message,
+        text: response.data.message,
         confirmButtonText: "OK",
       });
 

@@ -2,6 +2,7 @@ import { formatDate } from "@/lib/formatter";
 import { PelunasanDTO } from "@/lib/types";
 import Swal from "sweetalert2";
 import { create } from "zustand";
+import api from "@/lib/axios";
 
 export interface DataPelunasanI {
   id: number;
@@ -66,15 +67,10 @@ export const useEditLunasUtangStore = create<EditLunasStore>((set, get) => ({
 
   fetchDataPelunasan: async (nomorNota) => {
     try {
-      const response = await fetch(`/api/pelunasan/utang/${nomorNota}`, {
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch data pelunasan");
-      }
-
-      const { data }: { data: PelunasanDTO[] } = await response.json();
+      const response = await api.get<{ data: PelunasanDTO[] }>(
+        `/pelunasan/utang/${nomorNota}`,
+      );
+      const { data } = response.data;
 
       let saldo_nota = data[0].nota.nilai_nota;
       let lunas = 0;
@@ -161,7 +157,7 @@ export const useEditLunasUtangStore = create<EditLunasStore>((set, get) => ({
   deleteDataNota: (id) => {
     set((state) => {
       let updatedDataPelunasan = state.dataPelunasan.filter(
-        (item) => item.id !== id
+        (item) => item.id !== id,
       );
       if (updatedDataPelunasan.length === 0) {
         Swal.fire({
@@ -197,27 +193,20 @@ export const useEditLunasUtangStore = create<EditLunasStore>((set, get) => ({
     try {
       set({ isSubmitting: true });
 
-      const response = await fetch(`/api/pelunasan/utang/${get().nomorNota}`, {
-        cache: "no-store",
-        method: "PUT",
-        body: JSON.stringify({
+      const response = await api.put<{ message: string }>(
+        `/pelunasan/utang/${get().nomorNota}`,
+        {
           dataPelunasan: get().dataPelunasan,
           nilai_nota: get().nilai_nota,
           lunas_nota: get().lunas_nota,
           saldo_nota: get().saldo_nota,
           lunas_lama: get().lunas_lama,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update pelunasan data");
-      }
-
-      const { message } = await response.json();
+        },
+      );
       Swal.fire({
         icon: "success",
         title: "Success",
-        text: message,
+        text: response.data.message,
         confirmButtonText: "OK",
       });
       get().resetAll();
@@ -240,20 +229,14 @@ export const useEditLunasUtangStore = create<EditLunasStore>((set, get) => ({
     try {
       set({ isDeleting: true });
 
-      const response = await fetch(`/api/pelunasan/utang/${get().nomorNota}`, {
-        cache: "no-store",
-        method: "DELETE",
-      });
+      const response = await api.delete<{ message: string }>(
+        `/pelunasan/utang/${get().nomorNota}`,
+      );
 
-      if (!response.ok) {
-        throw new Error("Failed to delete pelunasan data");
-      }
-
-      const { message } = await response.json();
       Swal.fire({
         icon: "success",
         title: "Success",
-        text: message,
+        text: response.data.message,
         confirmButtonText: "OK",
       });
       get().resetAll();
@@ -315,15 +298,10 @@ export const useEditLunasPiutangStore = create<EditLunasStore>((set, get) => ({
 
   fetchDataPelunasan: async (nomorNota) => {
     try {
-      const response = await fetch(`/api/pelunasan/piutang/${nomorNota}`, {
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch data pelunasan");
-      }
-
-      const { data }: { data: PelunasanDTO[] } = await response.json();
+      const response = await api.get<{ data: PelunasanDTO[] }>(
+        `/pelunasan/piutang/${nomorNota}`,
+      );
+      const { data } = response.data;
 
       let saldo_nota = data[0].nota.nilai_nota;
       let lunas = 0;
@@ -410,7 +388,7 @@ export const useEditLunasPiutangStore = create<EditLunasStore>((set, get) => ({
   deleteDataNota: (id) => {
     set((state) => {
       let updatedDataPelunasan = state.dataPelunasan.filter(
-        (item) => item.id !== id
+        (item) => item.id !== id,
       );
       if (updatedDataPelunasan.length === 0) {
         Swal.fire({
@@ -446,30 +424,20 @@ export const useEditLunasPiutangStore = create<EditLunasStore>((set, get) => ({
     try {
       set({ isSubmitting: true });
 
-      const response = await fetch(
-        `/api/pelunasan/piutang/${get().nomorNota}`,
+      const response = await api.put<{ message: string }>(
+        `/pelunasan/piutang/${get().nomorNota}`,
         {
-          cache: "no-store",
-          method: "PUT",
-          body: JSON.stringify({
-            dataPelunasan: get().dataPelunasan,
-            nilai_nota: get().nilai_nota,
-            lunas_nota: get().lunas_nota,
-            saldo_nota: get().saldo_nota,
-            lunas_lama: get().lunas_lama,
-          }),
-        }
+          dataPelunasan: get().dataPelunasan,
+          nilai_nota: get().nilai_nota,
+          lunas_nota: get().lunas_nota,
+          saldo_nota: get().saldo_nota,
+          lunas_lama: get().lunas_lama,
+        },
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to update pelunasan data");
-      }
-
-      const { message } = await response.json();
       Swal.fire({
         icon: "success",
         title: "Success",
-        text: message,
+        text: response.data.message,
         confirmButtonText: "OK",
       });
       get().resetAll();
@@ -492,23 +460,14 @@ export const useEditLunasPiutangStore = create<EditLunasStore>((set, get) => ({
     try {
       set({ isDeleting: true });
 
-      const response = await fetch(
-        `/api/pelunasan/piutang/${get().nomorNota}`,
-        {
-          cache: "no-store",
-          method: "DELETE",
-        }
+      const response = await api.delete<{ message: string }>(
+        `/pelunasan/piutang/${get().nomorNota}`,
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to delete pelunasan data");
-      }
-
-      const { message } = await response.json();
       Swal.fire({
         icon: "success",
         title: "Success",
-        text: message,
+        text: response.data.message,
         confirmButtonText: "OK",
       });
       get().resetAll();

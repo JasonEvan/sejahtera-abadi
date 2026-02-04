@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { formatDate } from "@/lib/formatter";
 import { MenuBarangBeli } from "../useBeliStore";
 import { EditNotaTransaksiI } from "@/lib/types";
+import api from "@/lib/axios";
 
 interface EditBeliStore {
   namaClient: string;
@@ -36,7 +37,7 @@ interface EditBeliStore {
   setClientInformation: (
     namaClient: string,
     kotaClient: string,
-    nomorNota: string
+    nomorNota: string,
   ) => void;
   setClientInformationDone: () => void;
 
@@ -109,18 +110,11 @@ export const useEditBeliStore = create<EditBeliStore>((set, get) => ({
 
       const queryParams = new URLSearchParams(params);
 
-      const response = await fetch(
-        `/api/nota/pembelian?${queryParams.toString()}`,
-        { cache: "no-store" }
+      const response = await api.get<{ data: { nomor_nota: string }[] }>(
+        `/nota/pembelian?${queryParams.toString()}`,
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch menu nota");
-      }
-
-      const { data }: { data: { nomor_nota: string }[] } =
-        await response.json();
-      set({ menuNota: data.map((item) => item.nomor_nota) });
+      set({ menuNota: response.data.data.map((item) => item.nomor_nota) });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -136,16 +130,11 @@ export const useEditBeliStore = create<EditBeliStore>((set, get) => ({
   fetchMenuBarang: async () => {
     try {
       set({ menuBarangLoading: true });
-      const response = await fetch("/api/barang/menu-beli", {
-        cache: "no-store",
-      });
 
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch menu barang");
-      }
-
-      const { data }: { data: MenuBarangBeli[] } = await response.json();
-      set({ menuBarang: data });
+      const response = await api.get<{ data: MenuBarangBeli[] }>(
+        "/barang/menu-beli",
+      );
+      set({ menuBarang: response.data.data });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -172,15 +161,10 @@ export const useEditBeliStore = create<EditBeliStore>((set, get) => ({
 
       const queryParams = new URLSearchParams(params);
 
-      const response = await fetch(`/api/beli?${queryParams.toString()}`, {
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch data nota");
-      }
-
-      const { data }: { data: EditNotaTransaksiI[] } = await response.json();
+      const response = await api.get<{ data: EditNotaTransaksiI[] }>(
+        `/beli?${queryParams.toString()}`,
+      );
+      const { data } = response.data;
 
       const nilaiNota = data.reduce((acc, curr) => acc + curr.total_harga, 0);
 
@@ -213,26 +197,15 @@ export const useEditBeliStore = create<EditBeliStore>((set, get) => ({
 
       const queryParams = new URLSearchParams(params);
 
-      const response = await fetch(
-        `/api/beli/history?${queryParams.toString()}`,
-        { cache: "no-store" }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch beli history");
-      }
-
-      const {
-        data,
-      }: {
+      const response = await api.get<{
         data: {
           nama_barang: string;
           tanggal_nota: string;
           harga_barang: number;
         }[];
-      } = await response.json();
+      }>(`/beli/history?${queryParams.toString()}`);
 
-      const finalForm = data.map((item) => ({
+      const finalForm = response.data.data.map((item) => ({
         ...item,
         tanggal_nota: formatDate(new Date(item.tanggal_nota)),
       }));
@@ -281,7 +254,7 @@ export const useEditBeliStore = create<EditBeliStore>((set, get) => ({
 
       const currNilaiNota = updatedDataNota.reduce(
         (acc, curr) => acc + curr.total_harga,
-        0
+        0,
       );
 
       const currTotalAkhir =
@@ -300,7 +273,7 @@ export const useEditBeliStore = create<EditBeliStore>((set, get) => ({
       const updatedDataNota = state.dataNota.filter((item) => item.id !== id);
       const currNilaiNota = updatedDataNota.reduce(
         (acc, curr) => acc + curr.total_harga,
-        0
+        0,
       );
       const currTotalAkhir =
         currNilaiNota - (currNilaiNota * state.diskonNota) / 100;
@@ -329,30 +302,20 @@ export const useEditBeliStore = create<EditBeliStore>((set, get) => ({
     set({ isSubmitting: true });
 
     try {
-      const response = await fetch("/api/beli", {
-        cache: "no-store",
-        method: "PUT",
-        body: JSON.stringify({
-          namaClient: get().namaClient,
-          kotaClient: get().kotaClient,
-          nomorNota: get().nomorNota,
-          dataNota: get().dataNota,
-          nilaiNota: get().nilaiNota,
-          diskonNota: get().diskonNota,
-          totalAkhir: get().totalAkhir,
-        }),
+      const response = await api.put<{ message: string }>("/beli", {
+        namaClient: get().namaClient,
+        kotaClient: get().kotaClient,
+        nomorNota: get().nomorNota,
+        dataNota: get().dataNota,
+        nilaiNota: get().nilaiNota,
+        diskonNota: get().diskonNota,
+        totalAkhir: get().totalAkhir,
       });
 
-      if (!response.ok) {
-        const { error } = await response.json();
-        throw new Error(error || "Failed to update data");
-      }
-
-      const { message } = await response.json();
       Swal.fire({
         icon: "success",
         title: "Success",
-        text: message,
+        text: response.data.message,
         confirmButtonText: "OK",
       });
 
