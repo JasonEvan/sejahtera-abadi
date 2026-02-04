@@ -1,3 +1,4 @@
+import api from "@/lib/axios";
 import Swal from "sweetalert2";
 import { create } from "zustand";
 
@@ -34,7 +35,7 @@ interface ReturStore {
     namaClient: string,
     kotaClient: string,
     nomorNota: string,
-    tanggal: string
+    tanggal: string,
   ) => void;
   setClientInformationDone: () => void;
 
@@ -44,7 +45,7 @@ interface ReturStore {
   returBarang: (
     data: NotaI,
     jumlahReturBaru: number,
-    jumlahReturSebelum: number
+    jumlahReturSebelum: number,
   ) => void;
 
   submitRetur: () => Promise<void>;
@@ -91,18 +92,11 @@ export const useReturBeliStore = create<ReturStore>((set, get) => ({
 
       const queryParams = new URLSearchParams(params);
 
-      const response = await fetch(
-        `/api/nota/pembelian?${queryParams.toString()}`,
-        { cache: "no-store" }
+      const response = await api.get<{ data: { nomor_nota: string }[] }>(
+        `/nota/pembelian?${queryParams.toString()}`,
       );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch menu nota");
-      }
-
-      const { data }: { data: { nomor_nota: string }[] } =
-        await response.json();
-      set({ menuNota: data.map((item) => item.nomor_nota) });
+      set({ menuNota: response.data.data.map((item) => item.nomor_nota) });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -125,15 +119,11 @@ export const useReturBeliStore = create<ReturStore>((set, get) => ({
 
       const queryParams = new URLSearchParams(params);
 
-      const response = await fetch(`/api/beli?${queryParams.toString()}`, {
-        cache: "no-store",
-      });
+      const response = await api.get<{ data: NotaI[] }>(
+        `/beli?${queryParams.toString()}`,
+      );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch data nota");
-      }
-
-      const { data }: { data: NotaI[] } = await response.json();
+      const { data } = response.data;
 
       set({
         dataNota: data.map((d) => ({ ...d, retur_barang: 0 })),
@@ -177,7 +167,7 @@ export const useReturBeliStore = create<ReturStore>((set, get) => ({
                 total_harga:
                   item.harga_barang * (item.qty_barang - selisihQtyRetur),
               }
-            : item
+            : item,
         ),
         totalAkhir: state.totalAkhir - selisihNilaiNet,
         nilaiRetur: state.nilaiRetur + selisihNilaiNet,
@@ -189,30 +179,21 @@ export const useReturBeliStore = create<ReturStore>((set, get) => ({
     try {
       set({ isSubmitting: true });
 
-      const response = await fetch("/api/beli/retur", {
-        cache: "no-store",
-        method: "POST",
-        body: JSON.stringify({
-          namaClient: get().namaClient,
-          kotaClient: get().kotaClient,
-          nomorNota: get().nomorNota,
-          tanggal: get().tanggal,
-          dataNota: get().dataNota,
-          diskon: get().diskon,
-          totalAkhir: get().totalAkhir,
-          nilaiRetur: get().nilaiRetur,
-        }),
+      const response = await api.post<{ message: string }>("/beli/retur", {
+        namaClient: get().namaClient,
+        kotaClient: get().kotaClient,
+        nomorNota: get().nomorNota,
+        tanggal: get().tanggal,
+        dataNota: get().dataNota,
+        diskon: get().diskon,
+        totalAkhir: get().totalAkhir,
+        nilaiRetur: get().nilaiRetur,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to submit retur");
-      }
-
-      const { message }: { message: string } = await response.json();
       Swal.fire({
         icon: "success",
         title: "Success",
-        text: message,
+        text: response.data.message,
         confirmButtonText: "OK",
       });
 
@@ -287,18 +268,10 @@ export const useReturJualStore = create<ReturStore>((set, get) => ({
 
       const queryParams = new URLSearchParams(params);
 
-      const response = await fetch(
-        `/api/nota/penjualan?${queryParams.toString()}`,
-        { cache: "no-store" }
+      const response = await api.get<{ data: { nomor_nota: string }[] }>(
+        `/nota/penjualan?${queryParams.toString()}`,
       );
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch menu nota");
-      }
-
-      const { data }: { data: { nomor_nota: string }[] } =
-        await response.json();
-      set({ menuNota: data.map((item) => item.nomor_nota) });
+      set({ menuNota: response.data.data.map((item) => item.nomor_nota) });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -321,15 +294,11 @@ export const useReturJualStore = create<ReturStore>((set, get) => ({
 
       const queryParams = new URLSearchParams(params);
 
-      const response = await fetch(`/api/jual?${queryParams.toString()}`, {
-        cache: "no-store",
-      });
+      const response = await api.get<{ data: NotaI[] }>(
+        `/jual?${queryParams.toString()}`,
+      );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch data nota");
-      }
-
-      const { data }: { data: NotaI[] } = await response.json();
+      const { data } = response.data;
 
       set({
         dataNota: data.map((d) => ({ ...d, retur_barang: 0 })),
@@ -373,7 +342,7 @@ export const useReturJualStore = create<ReturStore>((set, get) => ({
                 total_harga:
                   item.harga_barang * (item.qty_barang - selisihQtyRetur),
               }
-            : item
+            : item,
         ),
         totalAkhir: state.totalAkhir - selisihNilaiNet,
         nilaiRetur: state.nilaiRetur + selisihNilaiNet,
@@ -385,30 +354,41 @@ export const useReturJualStore = create<ReturStore>((set, get) => ({
     try {
       set({ isSubmitting: true });
 
-      const response = await fetch("/api/jual/retur", {
-        cache: "no-store",
-        method: "POST",
-        body: JSON.stringify({
-          namaClient: get().namaClient,
-          kotaClient: get().kotaClient,
-          nomorNota: get().nomorNota,
-          tanggal: get().tanggal,
-          dataNota: get().dataNota,
-          diskon: get().diskon,
-          totalAkhir: get().totalAkhir,
-          nilaiRetur: get().nilaiRetur,
-        }),
+      // const response = await fetch("/api/jual/retur", {
+      //   cache: "no-store",
+      //   method: "POST",
+      //   body: JSON.stringify({
+      //     namaClient: get().namaClient,
+      //     kotaClient: get().kotaClient,
+      //     nomorNota: get().nomorNota,
+      //     tanggal: get().tanggal,
+      //     dataNota: get().dataNota,
+      //     diskon: get().diskon,
+      //     totalAkhir: get().totalAkhir,
+      //     nilaiRetur: get().nilaiRetur,
+      //   }),
+      // });
+
+      // if (!response.ok) {
+      //   throw new Error("Failed to submit retur");
+      // }
+
+      // const { message }: { message: string } = await response.json();
+      const response = await api.post<{ message: string }>("/jual/retur", {
+        namaClient: get().namaClient,
+        kotaClient: get().kotaClient,
+        nomorNota: get().nomorNota,
+        tanggal: get().tanggal,
+        dataNota: get().dataNota,
+        diskon: get().diskon,
+        totalAkhir: get().totalAkhir,
+        nilaiRetur: get().nilaiRetur,
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to submit retur");
-      }
-
-      const { message }: { message: string } = await response.json();
       Swal.fire({
         icon: "success",
         title: "Success",
-        text: message,
+        text: response.data.message,
         confirmButtonText: "OK",
       });
 

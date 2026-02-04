@@ -1,5 +1,6 @@
 import Swal from "sweetalert2";
 import { create } from "zustand";
+import api from "@/lib/axios";
 
 export interface MenuNota {
   nomor_nota: string;
@@ -31,7 +32,7 @@ interface LunasStore {
     namaClient: string,
     kotaClient: string,
     nomorTransaksi: string,
-    tanggal: string
+    tanggal: string,
   ) => void;
   setClientInformationDone: () => void;
 
@@ -100,16 +101,11 @@ export const useLunasUtangStore = create<LunasStore>((set, get) => ({
 
       const queryParams = new URLSearchParams(params);
 
-      const res = await fetch(`/api/nota/pembelian?${queryParams.toString()}`, {
-        cache: "no-store",
-      });
+      const response = await api.get<{ data: MenuNota[] }>(
+        `/nota/pembelian?${queryParams.toString()}`,
+      );
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch nomor nota");
-      }
-
-      const { data } = await res.json();
-      set({ menuNota: data });
+      set({ menuNota: response.data.data });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -125,29 +121,19 @@ export const useLunasUtangStore = create<LunasStore>((set, get) => ({
   submitLunas: async () => {
     try {
       set({ isSubmitting: true });
-      const res = await fetch("/api/pelunasan/utang", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          namaClient: get().namaClient,
-          kotaClient: get().kotaClient,
-          nomorTransaksi: get().nomorTransaksi,
-          tanggal: get().tanggal,
-          dataPelunasan: get().dataPelunasan,
-        }),
+
+      const response = await api.post<{ message: string }>("/pelunasan/utang", {
+        namaClient: get().namaClient,
+        kotaClient: get().kotaClient,
+        nomorTransaksi: get().nomorTransaksi,
+        tanggal: get().tanggal,
+        dataPelunasan: get().dataPelunasan,
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to submit pelunasan");
-      }
-
-      const { message } = await res.json();
       Swal.fire({
         icon: "success",
         title: "Success",
-        text: message,
+        text: response.data.message,
         confirmButtonText: "OK",
       });
 
@@ -242,16 +228,11 @@ export const useLunasPiutangStore = create<LunasStore>((set, get) => ({
 
       const queryParams = new URLSearchParams(params);
 
-      const res = await fetch(`/api/nota/penjualan?${queryParams.toString()}`, {
-        cache: "no-store",
-      });
+      const response = await api.get<{ data: MenuNota[] }>(
+        `/nota/penjualan?${queryParams.toString()}`,
+      );
 
-      if (!res.ok) {
-        throw new Error("Failed to fetch nomor nota");
-      }
-
-      const { data } = await res.json();
-      set({ menuNota: data });
+      set({ menuNota: response.data.data });
     } catch (error) {
       Swal.fire({
         icon: "error",
@@ -267,29 +248,22 @@ export const useLunasPiutangStore = create<LunasStore>((set, get) => ({
   submitLunas: async () => {
     try {
       set({ isSubmitting: true });
-      const res = await fetch("/api/pelunasan/piutang", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+
+      const response = await api.post<{ message: string }>(
+        "/pelunasan/piutang",
+        {
           namaClient: get().namaClient,
           kotaClient: get().kotaClient,
           nomorTransaksi: get().nomorTransaksi,
           tanggal: get().tanggal,
           dataPelunasan: get().dataPelunasan,
-        }),
-      });
+        },
+      );
 
-      if (!res.ok) {
-        throw new Error("Failed to submit pelunasan");
-      }
-
-      const { message } = await res.json();
       Swal.fire({
         icon: "success",
         title: "Success",
-        text: message,
+        text: response.data.message,
         confirmButtonText: "OK",
       });
 

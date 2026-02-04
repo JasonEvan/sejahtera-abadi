@@ -1,6 +1,7 @@
 import { salesman } from "@/app/generated/prisma";
 import { useState } from "react";
 import Swal from "sweetalert2";
+import api from "@/lib/axios";
 
 export const useLastNomorNota = () => {
   const [lastNomorNota, setLastNomorNota] = useState<string | null>(null);
@@ -15,20 +16,15 @@ export const useLastNomorNota = () => {
 
       const queryParams = new URLSearchParams(params);
 
-      const res = await fetch(`/api/sales?${queryParams.toString()}`, {
-        cache: "no-store",
-      });
-
-      if (res.status !== 200) {
-        throw new Error("Failed to fetch last nomor nota");
-      }
-
-      const { data }: { data: salesman[] } = await res.json();
+      const response = await api.get<{ data: salesman[] }>(
+        `/sales?${queryParams.toString()}`,
+      );
+      const { data } = response.data;
 
       const lastNum = (data[0].no_nota + 1).toString().padStart(5, "0");
 
       setLastNomorNota(
-        `${data[0].no_depan ? data[0].no_depan.toString() : "0"}${lastNum}`
+        `${data[0].no_depan ? data[0].no_depan.toString() : "0"}${lastNum}`,
       );
     } catch (error) {
       Swal.fire({

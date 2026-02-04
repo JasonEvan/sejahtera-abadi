@@ -1,6 +1,7 @@
 import Swal from "sweetalert2";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import api from "@/lib/axios";
 
 export interface DataPenjualanI {
   id: number;
@@ -43,7 +44,7 @@ interface JualStore {
     namaSales: string,
     nomorNota: string,
     tanggalNota: string,
-    kotaClient: string
+    kotaClient: string,
   ) => void;
   setClientInformationDone: () => void;
   setDataPenjualan: (dataPenjualan: DataPenjualanI) => void;
@@ -82,7 +83,7 @@ export const useJualStore = create<JualStore>()(
         namaSales,
         nomorNota,
         tanggalNota,
-        kotaClient
+        kotaClient,
       ) => {
         set({ namaLangganan, namaSales, nomorNota, tanggalNota, kotaClient });
       },
@@ -117,7 +118,7 @@ export const useJualStore = create<JualStore>()(
       updateDataPenjualan: (data) => {
         set((state) => {
           const originalItem = state.dataPenjualan.find(
-            (item) => item.id === data.id
+            (item) => item.id === data.id,
           );
           if (!originalItem) return {}; // Item tidak ditemukan, jangan lakukan apa-apa
 
@@ -178,7 +179,7 @@ export const useJualStore = create<JualStore>()(
 
           const newTotalPenjualan = updatedDataPenjualan.reduce(
             (acc, curr) => acc + curr.subtotal,
-            0
+            0,
           );
 
           const newTotalAkhir =
@@ -195,7 +196,7 @@ export const useJualStore = create<JualStore>()(
       removeDataPenjualan: (id: number) => {
         set((state) => {
           const itemToRemove = state.dataPenjualan.find(
-            (item) => item.id === id
+            (item) => item.id === id,
           );
           if (!itemToRemove) return {};
 
@@ -233,16 +234,12 @@ export const useJualStore = create<JualStore>()(
       fetchMenuBarang: async () => {
         try {
           set({ isLoading: true });
-          const response = await fetch("/api/barang/menu-jual", {
-            cache: "no-store",
-          });
 
-          if (!response.ok) {
-            throw new Error("Failed to fetch menu barang");
-          }
+          const response = await api.get<{ data: MenuBarangJual[] }>(
+            "/barang/menu-jual",
+          );
 
-          const { data }: { data: MenuBarangJual[] } = await response.json();
-          set({ menuBarang: data });
+          set({ menuBarang: response.data.data });
         } catch (error) {
           Swal.fire({
             icon: "error",
@@ -261,31 +258,21 @@ export const useJualStore = create<JualStore>()(
       submitJual: async () => {
         try {
           set({ isSubmitting: true });
-          const response = await fetch("/api/jual", {
-            cache: "no-store",
-            method: "POST",
-            body: JSON.stringify({
-              namaLangganan: get().namaLangganan,
-              namaSales: get().namaSales,
-              nomorNota: get().nomorNota,
-              tanggalNota: get().tanggalNota,
-              kotaClient: get().kotaClient,
-              dataPenjualan: get().dataPenjualan,
-              totalPenjualan: get().totalPenjualan,
-              diskon: get().diskon,
-              totalAkhir: get().totalAkhir,
-            }),
+          const response = await api.post<{ message: string }>("/jual", {
+            namaLangganan: get().namaLangganan,
+            namaSales: get().namaSales,
+            nomorNota: get().nomorNota,
+            tanggalNota: get().tanggalNota,
+            kotaClient: get().kotaClient,
+            dataPenjualan: get().dataPenjualan,
+            totalPenjualan: get().totalPenjualan,
+            diskon: get().diskon,
+            totalAkhir: get().totalAkhir,
           });
-
-          if (!response.ok) {
-            throw new Error("Failed to submit jual data");
-          }
-
-          const result = await response.json();
           Swal.fire({
             icon: "success",
             title: "Success",
-            text: result.message,
+            text: response.data.message,
             confirmButtonText: "OK",
           });
 
@@ -326,6 +313,6 @@ export const useJualStore = create<JualStore>()(
         });
       },
     }),
-    { name: "jual-storage" }
-  )
+    { name: "jual-storage" },
+  ),
 );

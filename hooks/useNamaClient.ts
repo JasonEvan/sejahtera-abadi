@@ -1,4 +1,5 @@
 import { client } from "@/app/generated/prisma";
+import api from "@/lib/axios";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
@@ -9,22 +10,16 @@ export const useNamaClient = () => {
   useEffect(() => {
     async function fetchNamaClient() {
       try {
-        const res = await fetch("/api/client?onlyclientsname=true", {
-          cache: "no-store",
-        });
-
-        if (res.status !== 200) {
-          throw new Error("Failed to fetch client names");
-        }
-
-        const clients: { data: client[] } = await res.json();
+        const response = await api.get<{ data: client[] }>(
+          "/client?onlyclientsname=true",
+        );
 
         setNamaClient(
-          clients.data.map((client) =>
+          response.data.data.map((client) =>
             client.kota_client
               ? `${client.nama_client}/${client.kota_client}`
-              : client.nama_client
-          )
+              : client.nama_client,
+          ),
         );
       } catch (error) {
         Swal.fire({

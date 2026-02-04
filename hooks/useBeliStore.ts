@@ -1,6 +1,7 @@
 import Swal from "sweetalert2";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import api from "@/lib/axios";
 
 export interface DataPembelianI {
   id: number;
@@ -39,7 +40,7 @@ interface BeliStore {
     namaClient: string,
     nomorNota: string,
     tanggalNota: string,
-    kotaClient: string
+    kotaClient: string,
   ) => void;
   setClientInformationDone: () => void;
   setDataPembelian: (dataPembelian: DataPembelianI) => void;
@@ -76,7 +77,7 @@ export const useBeliStore = create<BeliStore>()(
         namaClient,
         nomorNota,
         tanggalNota,
-        kotaClient
+        kotaClient,
       ) => {
         set({
           namaClient,
@@ -124,7 +125,7 @@ export const useBeliStore = create<BeliStore>()(
 
           const newTotalPembelian = updatedDataPembelian.reduce(
             (acc, curr) => acc + curr.subtotal,
-            0
+            0,
           );
 
           const newTotalAkhir =
@@ -141,7 +142,7 @@ export const useBeliStore = create<BeliStore>()(
       removeDataPembelian: (id) => {
         set((state) => {
           const itemToRemove = state.dataPembelian.find(
-            (item) => item.id === id
+            (item) => item.id === id,
           );
           if (!itemToRemove) return {};
 
@@ -169,17 +170,12 @@ export const useBeliStore = create<BeliStore>()(
       fetchMenuBarang: async () => {
         try {
           set({ isLoading: true });
-          const response = await fetch("/api/barang/menu-beli", {
-            cache: "no-store",
-          });
 
-          if (!response.ok) {
-            throw new Error("Failed to fetch menu barang");
-          }
+          const response = await api.get<{ data: MenuBarangBeli[] }>(
+            "/barang/menu-beli",
+          );
 
-          const { data }: { data: MenuBarangBeli[] } = await response.json();
-
-          set({ menuBarang: data });
+          set({ menuBarang: response.data.data });
         } catch (error) {
           Swal.fire({
             icon: "error",
@@ -199,30 +195,21 @@ export const useBeliStore = create<BeliStore>()(
       submitBeli: async () => {
         try {
           set({ isSubmitting: true });
-          const response = await fetch("/api/beli", {
-            cache: "no-store",
-            method: "POST",
-            body: JSON.stringify({
-              namaClient: get().namaClient,
-              nomorNota: get().nomorNota,
-              tanggalNota: get().tanggalNota,
-              kotaClient: get().kotaClient,
-              dataPembelian: get().dataPembelian,
-              totalPembelian: get().totalPembelian,
-              diskon: get().diskon,
-              totalAkhir: get().totalAkhir,
-            }),
+          const response = await api.post<{ message: string }>("/beli", {
+            namaClient: get().namaClient,
+            nomorNota: get().nomorNota,
+            tanggalNota: get().tanggalNota,
+            kotaClient: get().kotaClient,
+            dataPembelian: get().dataPembelian,
+            totalPembelian: get().totalPembelian,
+            diskon: get().diskon,
+            totalAkhir: get().totalAkhir,
           });
 
-          if (!response.ok) {
-            throw new Error("Failed to submit beli");
-          }
-
-          const result = await response.json();
           Swal.fire({
             icon: "success",
             title: "Success",
-            text: result.message,
+            text: response.data.message,
             confirmButtonText: "OK",
           });
 
@@ -263,6 +250,6 @@ export const useBeliStore = create<BeliStore>()(
         });
       },
     }),
-    { name: "beli-storage" }
-  )
+    { name: "beli-storage" },
+  ),
 );

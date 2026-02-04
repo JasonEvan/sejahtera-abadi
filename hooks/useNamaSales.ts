@@ -1,4 +1,5 @@
 import { salesman } from "@/app/generated/prisma";
+import api from "@/lib/axios";
 import { useEffect, useState } from "react";
 import Swal from "sweetalert2";
 
@@ -9,17 +10,11 @@ export const useNamaSales = () => {
   useEffect(() => {
     async function fetchNamaSales() {
       try {
-        const res = await fetch("/api/sales?onlysalesname=true", {
-          cache: "no-store",
-        });
+        const response = await api.get<{ data: salesman[] }>(
+          "/sales?onlysalesname=true",
+        );
 
-        if (res.status !== 200) {
-          throw new Error("Failed to fetch sales names");
-        }
-
-        const sales: { data: salesman[] } = await res.json();
-
-        setNamaSales(sales.data.map((sale) => sale.nama_sales));
+        setNamaSales(response.data.data.map((sale) => sale.nama_sales));
       } catch (error) {
         Swal.fire({
           icon: "error",
