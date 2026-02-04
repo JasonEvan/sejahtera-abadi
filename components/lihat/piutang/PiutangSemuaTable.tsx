@@ -1,4 +1,4 @@
-import { PiutangSemuaDTO, UtangTableRow } from "@/lib/types";
+import { getPiutang } from "@/service/piutangService";
 import {
   Box,
   Table,
@@ -11,7 +11,8 @@ import {
   Typography,
   Divider,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import Swal from "sweetalert2";
 
 interface Column {
@@ -80,52 +81,10 @@ const columns: readonly Column[] = [
 ];
 
 export default function PiutangSemuaTable() {
-  const [data, setData] = useState<UtangTableRow[]>([]);
-  const [summary, setSummary] = useState<{
-    totalNilaiNota: string;
-    totalLunasNota: string;
-    sisaPiutang: string;
-  }>({
-    totalNilaiNota: "0",
-    totalLunasNota: "0",
-    sisaPiutang: "0",
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["piutang"],
+    queryFn: getPiutang,
   });
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch("/api/jual/lihat", {
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch data");
-        }
-
-        const { data, summary }: PiutangSemuaDTO = await response.json();
-        setData(data);
-        setSummary(summary);
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: error instanceof Error ? error.message : "Failed to load data",
-          confirmButtonText: "OK",
-        });
-        setData([]);
-        setSummary({
-          totalNilaiNota: "0",
-          totalLunasNota: "0",
-          sisaPiutang: "0",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchData();
-  }, []);
 
   if (isLoading) {
     return (
@@ -140,6 +99,19 @@ export default function PiutangSemuaTable() {
         <CircularProgress />
       </Box>
     );
+  }
+
+  if (isError) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text:
+        error instanceof AxiosError
+          ? error.message
+          : "An unexpected error occurred while fetching piutang data.",
+      confirmButtonText: "OK",
+    });
+    return null;
   }
 
   return (
@@ -180,7 +152,7 @@ export default function PiutangSemuaTable() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map((row, index) => (
+            {data?.data.map((row, index) => (
               <TableRow hover role="checkbox" tabIndex={-1} key={index}>
                 {columns.map((column) => {
                   const value = row[column.id];
@@ -215,13 +187,13 @@ export default function PiutangSemuaTable() {
                 sx={{ border: 0, "@media print": { paddingY: "8px" } }}
                 align="right"
               >
-                {summary.totalNilaiNota}
+                {data?.summary.totalNilaiNota}
               </TableCell>
               <TableCell
                 sx={{ border: 0, "@media print": { paddingY: "8px" } }}
                 align="right"
               >
-                {summary.totalLunasNota}
+                {data?.summary.totalLunasNota}
               </TableCell>
               <TableCell
                 sx={{ border: 0, "@media print": { paddingY: "8px" } }}
@@ -230,7 +202,7 @@ export default function PiutangSemuaTable() {
                 sx={{ border: 0, "@media print": { paddingY: "8px" } }}
                 align="right"
               >
-                {summary.sisaPiutang}
+                {data?.summary.sisaPiutang}
               </TableCell>
             </TableRow>
           </TableBody>
