@@ -1,4 +1,4 @@
-import { UtangSemuaDTO, UtangTableRow } from "@/lib/types";
+import { getUtang } from "@/service/utangService";
 import {
   Box,
   Table,
@@ -11,7 +11,8 @@ import {
   Typography,
   Divider,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import Swal from "sweetalert2";
 
 interface Column {
@@ -80,52 +81,10 @@ const columns: readonly Column[] = [
 ];
 
 export default function UtangSemuaTable() {
-  const [data, setData] = useState<UtangTableRow[]>([]);
-  const [summary, setSummary] = useState<{
-    totalNilaiNota: string;
-    totalLunasNota: string;
-    sisaUtang: string;
-  }>({
-    totalNilaiNota: "0",
-    totalLunasNota: "0",
-    sisaUtang: "0",
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["utang"],
+    queryFn: getUtang,
   });
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetch("/api/beli/lihat", {
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch data");
-        }
-
-        const { data, summary }: UtangSemuaDTO = await response.json();
-        setData(data);
-        setSummary(summary);
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: error instanceof Error ? error.message : "Failed to load data",
-          confirmButtonText: "OK",
-        });
-        setData([]);
-        setSummary({
-          totalNilaiNota: "0",
-          totalLunasNota: "0",
-          sisaUtang: "0",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchData();
-  }, []);
 
   if (isLoading) {
     return (
@@ -140,6 +99,19 @@ export default function UtangSemuaTable() {
         <CircularProgress />
       </Box>
     );
+  }
+
+  if (isError) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text:
+        error instanceof AxiosError
+          ? error.message
+          : "An unexpected error occurred while fetching utang data.",
+      confirmButtonText: "OK",
+    });
+    return null;
   }
 
   return (
@@ -180,7 +152,7 @@ export default function UtangSemuaTable() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map((row, index) => (
+            {data?.data.map((row, index) => (
               <TableRow hover role="checkbox" tabIndex={-1} key={index}>
                 {columns.map((column) => {
                   const value = row[column.id];
@@ -215,13 +187,13 @@ export default function UtangSemuaTable() {
                 align="right"
                 sx={{ border: 0, "@media print": { paddingY: "8px" } }}
               >
-                {summary.totalNilaiNota}
+                {data?.summary.totalNilaiNota}
               </TableCell>
               <TableCell
                 align="right"
                 sx={{ border: 0, "@media print": { paddingY: "8px" } }}
               >
-                {summary.totalLunasNota}
+                {data?.summary.totalLunasNota}
               </TableCell>
               <TableCell
                 sx={{ border: 0, "@media print": { paddingY: "8px" } }}
@@ -230,7 +202,7 @@ export default function UtangSemuaTable() {
                 align="right"
                 sx={{ border: 0, "@media print": { paddingY: "8px" } }}
               >
-                {summary.sisaUtang}
+                {data?.summary.sisaUtang}
               </TableCell>
             </TableRow>
           </TableBody>

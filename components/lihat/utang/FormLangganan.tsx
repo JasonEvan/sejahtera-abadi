@@ -1,6 +1,9 @@
 import { useUtangLanggananStore } from "@/hooks/lihat/useUtangLanggananStore";
 import { useNamaClient } from "@/hooks/useNamaClient";
+import { getUtangLangganan } from "@/service/utangService";
 import { Autocomplete, Button, Grid, TextField } from "@mui/material";
+import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { useFormik } from "formik";
 import Swal from "sweetalert2";
 
@@ -11,58 +14,45 @@ type FormLanggananProps = {
 export default function FormLangganan({ setLangganan }: FormLanggananProps) {
   const { namaClient, isLoading: namaClientLoading } = useNamaClient();
   const setData = useUtangLanggananStore((state) => state.setData);
-  const data = useUtangLanggananStore((state) => state.data);
+  const dataTable = useUtangLanggananStore((state) => state.data);
+
+  const utangMutation = useMutation({
+    mutationFn: getUtangLangganan,
+    onSuccess: (data) => {
+      setData(data.data, data.summary);
+    },
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.message
+          : "An unexpected error occurred while fetching utang langganan data.";
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMessage,
+        confirmButtonText: "OK",
+      });
+      setData([], {
+        totalNilaiNota: "0",
+        totalLunasNota: "0",
+        sisaUtang: "0",
+      });
+    },
+  });
+
   const formik = useFormik({
     initialValues: {
       namaclient: "",
     },
-    onSubmit: async (values, { setSubmitting }) => {
-      try {
-        setSubmitting(true);
-
-        const params = {
-          nama: values.namaclient.split("/")[0],
-          kota: values.namaclient.split("/")[1] || "",
-        };
-
-        const queryParams = new URLSearchParams(params);
-
-        const response = await fetch(
-          `/api/beli/lihat/langganan?${queryParams.toString()}`,
-          {
-            cache: "no-store",
-          }
-        );
-
-        if (!response.ok) {
-          const { error } = await response.json();
-          throw new Error(error || "Gagal mengambil data");
-        }
-
-        const { data, summary } = await response.json();
-        setData(data, summary);
-        setLangganan(
-          values.namaclient.split("/")[1]
-            ? `${values.namaclient.split("/")[0]}/${
-                values.namaclient.split("/")[1]
-              }`
-            : values.namaclient.split("/")[0]
-        );
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: error instanceof Error ? error.message : "Terjadi kesalahan",
-          confirmButtonText: "OK",
-        });
-        setData([], {
-          totalNilaiNota: "0",
-          totalLunasNota: "0",
-          sisaUtang: "0",
-        });
-      } finally {
-        setSubmitting(false);
-      }
+    onSubmit: async (values) => {
+      utangMutation.mutate(values.namaclient);
+      setLangganan(
+        values.namaclient.split("/")[1]
+          ? `${values.namaclient.split("/")[0]}/${
+              values.namaclient.split("/")[1]
+            }`
+          : values.namaclient.split("/")[0],
+      );
     },
   });
 
@@ -106,13 +96,13 @@ export default function FormLangganan({ setLangganan }: FormLanggananProps) {
         <Button
           type="submit"
           variant="contained"
-          loading={formik.isSubmitting}
+          loading={utangMutation.isPending}
           sx={{ displayPrint: "none" }}
         >
           Search
         </Button>
       </form>
-      {data.length > 0 && (
+      {dataTable.length > 0 && (
         <Button
           variant="contained"
           color="info"
