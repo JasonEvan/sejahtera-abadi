@@ -17,7 +17,7 @@ import { client } from "@/app/generated/prisma";
 import Swal from "sweetalert2";
 import EditClientForm from "./EditClientForm";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getClients } from "@/service/tambah/clientService";
+import { getClients } from "@/service/clientService";
 import { AxiosError } from "axios";
 
 interface Column {

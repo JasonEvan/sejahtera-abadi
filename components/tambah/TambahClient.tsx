@@ -5,7 +5,7 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import Swal from "sweetalert2";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { tambahClient } from "@/service/tambah/clientService";
+import { tambahClient } from "@/service/clientService";
 import { AxiosError } from "axios";
 
 export default function TambahClient() {

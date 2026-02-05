@@ -1,4 +1,4 @@
-import { getClientNames } from "@/service/tambah/clientService";
+import { getClientNames } from "@/service/clientService";
 import { useQuery } from "@tanstack/react-query";
 
 export const useNamaClient = () => {
