@@ -13,6 +13,9 @@ import StorageIcon from "@mui/icons-material/Storage";
 import { usePathname, useRouter } from "next/navigation";
 import { Box, Button, Typography } from "@mui/material";
 import Swal from "sweetalert2";
+import { useMutation } from "@tanstack/react-query";
+import { logout } from "@/service/authService";
+import { AxiosError } from "axios";
 
 export const menus = [
   { label: "Home", path: "/dashboard", icon: <HomeIcon /> },
@@ -42,29 +45,24 @@ export default function Sidebar() {
   const pathName = usePathname();
   const router = useRouter();
 
-  async function handleLogout() {
-    try {
-      const response = await fetch("/api/auth/logout", {
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to logout. Please try again.");
-      }
-
+  const logoutMutation = useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
       router.replace("/");
-    } catch (error) {
-      await Swal.fire({
+    },
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.response?.data?.error || error.message
+          : "An unexpected error occurred during logout.";
+      Swal.fire({
         icon: "error",
         title: "Logout Failed",
-        text:
-          error instanceof Error
-            ? error.message
-            : "An error occurred during logout. Please try again.",
+        text: errorMessage,
         confirmButtonText: "OK",
       });
-    }
-  }
+    },
+  });
 
   return (
     <Box
@@ -105,7 +103,8 @@ export default function Sidebar() {
         startIcon={<LogoutIcon />}
         fullWidth
         sx={{ display: "flex", alignItems: "center", marginTop: "auto" }}
-        onClick={handleLogout}
+        onClick={() => logoutMutation.mutate()}
+        loading={logoutMutation.isPending}
       >
         Logout
       </Button>

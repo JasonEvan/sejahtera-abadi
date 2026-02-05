@@ -16,6 +16,9 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { useRouter } from "next/navigation";
 import Swal from "sweetalert2";
+import { useMutation } from "@tanstack/react-query";
+import { login } from "@/service/authService";
+import { AxiosError } from "axios";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,6 +35,25 @@ export default function LoginPage() {
       .required("Password is required"),
   });
 
+  const authMutation = useMutation({
+    mutationFn: login,
+    onSuccess: () => {
+      router.replace("/dashboard");
+    },
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.response?.data?.error || error.message
+          : "An unexpected error occurred during login.";
+      Swal.fire({
+        icon: "error",
+        title: "Login Failed",
+        text: errorMessage,
+        confirmButtonText: "OK",
+      });
+    },
+  });
+
   // Initialize formik for form handling
   // This will manage form state and handle submission
   const formik = useFormik({
@@ -40,34 +62,8 @@ export default function LoginPage() {
       password: "",
     },
     validationSchema,
-    onSubmit: async (values, { setSubmitting }) => {
-      try {
-        setSubmitting(true);
-        const response = await fetch("/api/auth/login", {
-          cache: "no-store",
-          method: "POST",
-          body: JSON.stringify(values),
-        });
-
-        if (!response.ok) {
-          const { error } = await response.json();
-          throw new Error(error || "Something went wrong");
-        }
-
-        router.replace("/dashboard");
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Login Failed",
-          text:
-            error instanceof Error
-              ? error.message
-              : "An unexpected error occurred",
-          confirmButtonText: "OK",
-        });
-      } finally {
-        setSubmitting(false);
-      }
+    onSubmit: (values) => {
+      authMutation.mutate(values);
     },
   });
 
@@ -149,7 +145,7 @@ export default function LoginPage() {
           <Button
             variant="contained"
             type="submit"
-            loading={formik.isSubmitting}
+            loading={authMutation.isPending}
           >
             Sign In
           </Button>
