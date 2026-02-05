@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-type TodayPerformanceType = {
+export type TodayPerformanceType = {
   title: string;
   content: string;
   subcontent: string;
@@ -8,14 +8,14 @@ type TodayPerformanceType = {
   titleIcon: string;
 };
 
-type TransactionProps = {
+export type TransactionProps = {
   nota: string;
   nama: string;
   total: number;
   status: "completed" | "pending";
 };
 
-type ProductsProps = {
+export type ProductsProps = {
   name: string;
   quantity: number;
   total: number;

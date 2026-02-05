@@ -5,46 +5,19 @@ import RecentTransaction from "@/components/home/RecentTransaction";
 import TodayPerformance from "@/components/home/TodayPerformance";
 import TopSellingProducts from "@/components/home/TopSellingProducts";
 import { useHomepageStore } from "@/hooks/useHomepageStore";
+import { getDashboardData } from "@/service/dashboardService";
 import { Box, CircularProgress } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import Swal from "sweetalert2";
 
 export default function Home() {
-  const [isLoading, setIsLoading] = useState(true);
   const setData = useHomepageStore((state) => state.setData);
 
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setIsLoading(true);
-        const response = await fetch("/api/dashboard", {
-          cache: "no-store",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch dashboard data");
-        }
-
-        const { data } = await response.json();
-        setData(data);
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text:
-            error instanceof Error
-              ? error.message
-              : "An unknown error occurred",
-          confirmButtonText: "OK",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { data, isLoading, isError, error, isSuccess } = useQuery({
+    queryKey: ["dashboard"],
+    queryFn: getDashboardData,
+  });
 
   if (isLoading) {
     return (
@@ -57,6 +30,22 @@ export default function Home() {
         <CircularProgress />
       </Box>
     );
+  }
+
+  if (isError) {
+    Swal.fire({
+      icon: "error",
+      title: "Error",
+      text:
+        error instanceof AxiosError
+          ? error.response?.data?.error || error.message
+          : "An unknown error occurred",
+      confirmButtonText: "OK",
+    });
+  }
+
+  if (isSuccess && data.data) {
+    setData(data.data);
   }
 
   return (
