@@ -12,9 +12,17 @@ import { useFormik } from "formik";
 import { useNamaClient } from "@/hooks/useNamaClient";
 import { useBeliStore } from "@/hooks/useBeliStore";
 import { useEffect } from "react";
+import Swal from "sweetalert2";
+import { AxiosError } from "axios";
 
 export default function ClientInformation() {
-  const { namaClient, isLoading: namaClientLoading } = useNamaClient();
+  const {
+    data: namaClient,
+    isLoading: namaClientLoading,
+    isError,
+    error,
+  } = useNamaClient();
+
   const {
     setClientInformation,
     setClientInformationDone,
@@ -49,12 +57,26 @@ export default function ClientInformation() {
         values.namaclient.split("/")[0],
         values.nomornota,
         values.tanggal,
-        values.namaclient.split("/")[1] ? values.namaclient.split("/")[1] : ""
+        values.namaclient.split("/")[1] ? values.namaclient.split("/")[1] : "",
       );
       setClientInformationDone();
       fetchMenuBarang();
     },
   });
+
+  useEffect(() => {
+    if (isError) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error instanceof AxiosError
+            ? error.response?.data?.error || error.message
+            : "An unexpected error occurred while fetching client names.",
+        confirmButtonText: "OK",
+      });
+    }
+  }, [isError, error]);
 
   useEffect(() => {
     if (!clientInformationDone) {

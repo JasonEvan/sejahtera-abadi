@@ -11,6 +11,8 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useNamaClient } from "@/hooks/useNamaClient";
 import { useEffect } from "react";
+import Swal from "sweetalert2";
+import { AxiosError } from "axios";
 
 export default function ClientInformation({
   setClientInformation,
@@ -23,14 +25,19 @@ export default function ClientInformation({
     namaClient: string,
     kotaClient: string,
     nomorTransaksi: string,
-    tanggal: string
+    tanggal: string,
   ) => void;
   setClientInformationDone: () => void;
   fetchNomorNota: () => Promise<void>;
   resetAll: () => void;
   clientInformationDone: boolean;
 }) {
-  const { namaClient, isLoading: namaClientLoading } = useNamaClient();
+  const {
+    data: namaClient,
+    isLoading: namaClientLoading,
+    isError,
+    error,
+  } = useNamaClient();
   const validationSchema = Yup.object({
     namaclient: Yup.string().required("Nama client is required"),
     nomortransaksi: Yup.string().required("Nomor transaksi is required"),
@@ -50,12 +57,26 @@ export default function ClientInformation({
         values.namaclient.split("/")[0],
         values.namaclient.split("/")[1] ? values.namaclient.split("/")[1] : "",
         values.nomortransaksi,
-        values.tanggal
+        values.tanggal,
       );
       setClientInformationDone();
       fetchNomorNota();
     },
   });
+
+  useEffect(() => {
+    if (isError) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error instanceof AxiosError
+            ? error.response?.data?.error || error.message
+            : "An unexpected error occurred while fetching client names.",
+        confirmButtonText: "OK",
+      });
+    }
+  }, [isError, error]);
 
   useEffect(() => {
     if (!clientInformationDone) {

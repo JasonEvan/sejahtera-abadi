@@ -10,6 +10,8 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useNamaClient } from "@/hooks/useNamaClient";
 import { useEffect } from "react";
+import Swal from "sweetalert2";
+import { AxiosError } from "axios";
 
 export default function ClientInformation({
   clientInformationDone,
@@ -28,14 +30,19 @@ export default function ClientInformation({
     namaClient: string,
     kotaClient: string,
     nomorNota: string,
-    tanggal: string
+    tanggal: string,
   ) => void;
   setClientInformationDone: () => void;
   fetchDataNota: () => Promise<void>;
   fetchMenuNota: (namaClient: string, kotaClient: string) => void;
   resetAll: () => void;
 }) {
-  const { namaClient, isLoading: namaClientLoading } = useNamaClient();
+  const {
+    data: namaClient,
+    isLoading: namaClientLoading,
+    isError,
+    error,
+  } = useNamaClient();
 
   const validationSchema = Yup.object({
     namaclient: Yup.string().required("Nama client is required"),
@@ -56,7 +63,7 @@ export default function ClientInformation({
         values.namaclient.split("/")[0],
         values.namaclient.split("/")[1] || "",
         values.nomornota,
-        values.tanggal
+        values.tanggal,
       );
       setClientInformationDone();
       fetchDataNota();
@@ -64,10 +71,24 @@ export default function ClientInformation({
   });
 
   useEffect(() => {
+    if (isError) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error instanceof AxiosError
+            ? error.response?.data?.error || error.message
+            : "An unexpected error occurred",
+        confirmButtonText: "OK",
+      });
+    }
+  }, [isError, error]);
+
+  useEffect(() => {
     if (formik.values.namaclient && formik.values.namaclient.length > 0) {
       fetchMenuNota(
         formik.values.namaclient.split("/")[0],
-        formik.values.namaclient.split("/")[1] || ""
+        formik.values.namaclient.split("/")[1] || "",
       );
       formik.setFieldValue("nomornota", "");
     }

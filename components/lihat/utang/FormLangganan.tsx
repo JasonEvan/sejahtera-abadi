@@ -5,6 +5,7 @@ import { Autocomplete, Button, Grid, TextField } from "@mui/material";
 import { useMutation } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useFormik } from "formik";
+import { useEffect } from "react";
 import Swal from "sweetalert2";
 
 type FormLanggananProps = {
@@ -12,7 +13,12 @@ type FormLanggananProps = {
 };
 
 export default function FormLangganan({ setLangganan }: FormLanggananProps) {
-  const { namaClient, isLoading: namaClientLoading } = useNamaClient();
+  const {
+    data: namaClient,
+    isLoading: namaClientLoading,
+    isError,
+    error,
+  } = useNamaClient();
   const setData = useUtangLanggananStore((state) => state.setData);
   const dataTable = useUtangLanggananStore((state) => state.data);
 
@@ -55,6 +61,20 @@ export default function FormLangganan({ setLangganan }: FormLanggananProps) {
       );
     },
   });
+
+  useEffect(() => {
+    if (isError) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error instanceof AxiosError
+            ? error.response?.data?.error || error.message
+            : "An unexpected error occurred while fetching nama client.",
+        confirmButtonText: "OK",
+      });
+    }
+  }, [isError, error]);
 
   return (
     <>
