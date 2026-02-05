@@ -4,6 +4,7 @@ import { Autocomplete, Button, Grid, TextField } from "@mui/material";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
 import { useFormik } from "formik";
+import { useEffect } from "react";
 import Swal from "sweetalert2";
 
 type FormPersediaanProps = {
@@ -24,17 +25,19 @@ export default function FormPersediaan({ setBarang }: FormPersediaanProps) {
     queryFn: getMenuBeli,
   });
 
-  if (isError) {
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text:
-        error instanceof Error
-          ? error.message
-          : "An unexpected error occurred while fetching menu barang.",
-      confirmButtonText: "OK",
-    });
-  }
+  useEffect(() => {
+    if (isError) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error instanceof Error
+            ? error.message
+            : "An unexpected error occurred while fetching menu barang.",
+        confirmButtonText: "OK",
+      });
+    }
+  }, [isError, error]);
 
   const persediaanMutation = useMutation({
     mutationFn: getPersediaan,

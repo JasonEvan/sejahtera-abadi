@@ -9,6 +9,7 @@ import { getDashboardData } from "@/service/dashboardService";
 import { Box, CircularProgress } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { useEffect } from "react";
 import Swal from "sweetalert2";
 
 export default function Home() {
@@ -18,6 +19,26 @@ export default function Home() {
     queryKey: ["dashboard"],
     queryFn: getDashboardData,
   });
+
+  useEffect(() => {
+    if (isError) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error instanceof AxiosError
+            ? error.response?.data?.error || error.message
+            : "An unknown error occurred",
+        confirmButtonText: "OK",
+      });
+    }
+  }, [isError, error]);
+
+  useEffect(() => {
+    if (isSuccess && data.data) {
+      setData(data.data);
+    }
+  }, [isSuccess, data, setData]);
 
   if (isLoading) {
     return (
@@ -30,18 +51,6 @@ export default function Home() {
         <CircularProgress />
       </Box>
     );
-  }
-
-  if (isError) {
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text:
-        error instanceof AxiosError
-          ? error.response?.data?.error || error.message
-          : "An unknown error occurred",
-      confirmButtonText: "OK",
-    });
   }
 
   if (isSuccess && data.data) {

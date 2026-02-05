@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { useQuery } from "@tanstack/react-query";
 import { AxiosError } from "axios";
+import { useEffect } from "react";
 import Swal from "sweetalert2";
 
 interface Column {
@@ -86,6 +87,20 @@ export default function UtangSemuaTable() {
     queryFn: getUtang,
   });
 
+  useEffect(() => {
+    if (isError) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error instanceof AxiosError
+            ? error.message
+            : "An unexpected error occurred while fetching utang data.",
+        confirmButtonText: "OK",
+      });
+    }
+  }, [isError, error]);
+
   if (isLoading) {
     return (
       <Box
@@ -102,15 +117,6 @@ export default function UtangSemuaTable() {
   }
 
   if (isError) {
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text:
-        error instanceof AxiosError
-          ? error.message
-          : "An unexpected error occurred while fetching utang data.",
-      confirmButtonText: "OK",
-    });
     return null;
   }
 
