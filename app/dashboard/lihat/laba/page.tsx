@@ -2,44 +2,31 @@
 
 import FormLaba from "@/components/lihat/laba/FormLaba";
 import LabaTable from "@/components/lihat/laba/LabaTable";
-import { LaporanLaba } from "@/lib/types";
+import { getLaba } from "@/service/labaService";
 import { Box, Button, Typography } from "@mui/material";
+import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { useState } from "react";
 import Swal from "sweetalert2";
 
 export default function LabaPage() {
-  const [data, setData] = useState<LaporanLaba | null>(null);
   const [bulan, setBulan] = useState<string>("Januari");
 
-  const handleSubmit = async (bulan: string, tahun: string) => {
-    const params = {
-      bulan,
-      tahun,
-    };
-
-    const queryParams = new URLSearchParams(params);
-
-    const response = await fetch(`/api/laba?${queryParams.toString()}`, {
-      cache: "no-store",
-    });
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch data");
-    }
-
-    const { data } = await response.json();
-    setData(data);
-  };
-
-  const handleError = (error: string) => {
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: error,
-      confirmButtonText: "OK",
-    });
-    setData(null);
-  };
+  const labaMutation = useMutation({
+    mutationFn: getLaba,
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.message
+          : "An unexpected error occurred while fetching the laba data.";
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMessage,
+        confirmButtonText: "OK",
+      });
+    },
+  });
 
   return (
     <Box>
@@ -56,12 +43,12 @@ export default function LabaPage() {
         Laba Bulanan
       </Typography>
       <FormLaba
-        handleSubmit={handleSubmit}
-        handleError={handleError}
+        handleSubmit={(bulan, tahun) => labaMutation.mutate({ bulan, tahun })}
         setBulan={setBulan}
+        isLoading={labaMutation.isPending}
       />
 
-      {data && (
+      {labaMutation.data?.data && (
         <Button
           variant="contained"
           color="info"
@@ -72,7 +59,7 @@ export default function LabaPage() {
         </Button>
       )}
 
-      <LabaTable data={data} bulan={bulan} />
+      <LabaTable data={labaMutation.data?.data || null} bulan={bulan} />
     </Box>
   );
 }

@@ -18,15 +18,15 @@ const month = [
 ];
 
 type FormLabaProps = {
-  handleSubmit: (bulan: string, tahun: string) => Promise<void>;
-  handleError: (error: string) => void;
+  handleSubmit: (bulan: string, tahun: string) => void;
   setBulan: React.Dispatch<React.SetStateAction<string>>;
+  isLoading: boolean;
 };
 
 export default function FormLaba({
   handleSubmit,
-  handleError,
   setBulan,
+  isLoading,
 }: FormLabaProps) {
   const [menuBulan, setMenuBulan] = useState<string[]>([]);
 
@@ -34,23 +34,13 @@ export default function FormLaba({
     initialValues: {
       bulan: "",
     },
-    onSubmit: async (values, { setSubmitting }) => {
-      try {
-        setSubmitting(true);
+    onSubmit: (values) => {
+      setBulan(month[parseInt(values.bulan.split("-")[0] || "0") - 1]);
 
-        setBulan(month[parseInt(values.bulan.split("-")[0] || "0") - 1]);
-
-        await handleSubmit(
-          values.bulan.split("-")[0] || "",
-          values.bulan.split("-")[1] || ""
-        );
-      } catch (error) {
-        handleError(
-          error instanceof Error ? error.message : "An error occurred"
-        );
-      } finally {
-        setSubmitting(false);
-      }
+      handleSubmit(
+        values.bulan.split("-")[0] || "",
+        values.bulan.split("-")[1] || "",
+      );
     },
   });
 
@@ -58,7 +48,7 @@ export default function FormLaba({
     const currYear = new Date().getFullYear();
     const months = Array.from(
       { length: 12 },
-      (_, index) => `${index + 1}-${currYear}`
+      (_, index) => `${index + 1}-${currYear}`,
     );
 
     setMenuBulan(months);
@@ -97,7 +87,7 @@ export default function FormLaba({
       <Button
         type="submit"
         variant="contained"
-        loading={formik.isSubmitting}
+        loading={isLoading}
         sx={{ displayPrint: "none" }}
       >
         Search
