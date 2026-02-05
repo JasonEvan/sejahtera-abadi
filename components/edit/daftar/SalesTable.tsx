@@ -17,7 +17,7 @@ import { salesman } from "@/app/generated/prisma";
 import Swal from "sweetalert2";
 import EditSalesForm from "./EditSalesForm";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSalesmen } from "@/service/tambah/salesService";
+import { getSalesmen } from "@/service/salesService";
 import { AxiosError } from "axios";
 
 interface Column {

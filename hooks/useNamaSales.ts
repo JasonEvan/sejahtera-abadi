@@ -1,4 +1,4 @@
-import { getSalesmenNames } from "@/service/tambah/salesService";
+import { getSalesmenNames } from "@/service/salesService";
 import { useQuery } from "@tanstack/react-query";
 
 export const useNamaSales = () => {
