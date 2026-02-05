@@ -12,7 +12,7 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import Swal from "sweetalert2";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { tambahBarang } from "@/service/tambah/barangService";
+import { tambahBarang } from "@/service/barangService";
 import { AxiosError } from "axios";
 
 export default function TambahBarang() {

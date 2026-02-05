@@ -17,7 +17,7 @@ import { stock } from "@/app/generated/prisma";
 import Swal from "sweetalert2";
 import EditStockForm from "./EditStockForm";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getBarang } from "@/service/tambah/barangService";
+import { getBarang } from "@/service/barangService";
 import { AxiosError } from "axios";
 
 interface Column {
