@@ -19,3 +19,10 @@ export const getSalesmen = async () => {
   const response = await api.get<{ data: salesman[] }>("/sales");
   return response.data;
 };
+
+export const getSalesmenNames = async () => {
+  const response = await api.get<{ data: salesman[] }>(
+    "/sales?onlysalesname=true",
+  );
+  return response.data;
+};

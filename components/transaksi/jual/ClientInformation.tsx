@@ -26,7 +26,12 @@ export default function ClientInformation() {
     isError,
     error,
   } = useNamaClient();
-  const { namaSales, isLoading: namaSalesLoading } = useNamaSales();
+  const {
+    data: namaSales,
+    isLoading: namaSalesLoading,
+    isError: isErrorSales,
+    error: errorSales,
+  } = useNamaSales();
   const {
     lastNomorNota,
     isLoading: lastNomorNotaLoading,
@@ -88,6 +93,20 @@ export default function ClientInformation() {
       });
     }
   }, [isError, error]);
+
+  useEffect(() => {
+    if (isErrorSales) {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          errorSales instanceof AxiosError
+            ? errorSales.response?.data?.error || errorSales.message
+            : "An unexpected error occurred",
+        confirmButtonText: "OK",
+      });
+    }
+  }, [isErrorSales, errorSales]);
 
   useEffect(() => {
     if (formik.values.namasales) {
