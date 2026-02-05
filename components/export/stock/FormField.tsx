@@ -1,3 +1,4 @@
+import { exportStock } from "@/service/exportService";
 import {
   Box,
   Button,
@@ -8,6 +9,8 @@ import {
   OutlinedInput,
 } from "@mui/material";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
+import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { useState } from "react";
 import Swal from "sweetalert2";
 
@@ -32,12 +35,10 @@ const options = [
   "qty_out",
   "satuan_barang",
   "modal",
-  "rusak_barang",
 ];
 
 export default function FormField() {
   const [columns, setColumns] = useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handleChange = (e: SelectChangeEvent<typeof columns>) => {
     const {
@@ -46,21 +47,9 @@ export default function FormField() {
     setColumns(typeof value === "string" ? value.split(",") : value);
   };
 
-  const handleSubmit = async () => {
-    try {
-      setIsSubmitting(true);
-      const res = await fetch("/api/barang/export", {
-        cache: "no-store",
-        method: "POST",
-        body: JSON.stringify({ columns }),
-      });
-
-      if (!res.ok) {
-        const { error } = await res.json();
-        throw new Error(error || "Failed to export data");
-      }
-
-      const blob = await res.blob();
+  const exportMutation = useMutation({
+    mutationFn: exportStock,
+    onSuccess: (blob) => {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -78,17 +67,20 @@ export default function FormField() {
       });
 
       setColumns([]);
-    } catch (error) {
+    },
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.response?.data?.error || error.message
+          : "An unexpected error occurred";
       Swal.fire({
         icon: "error",
         title: "Export Failed",
-        text: error instanceof Error ? error.message : "Unknown error",
+        text: errorMessage,
         confirmButtonText: "OK",
       });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+    },
+  });
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -119,8 +111,8 @@ export default function FormField() {
       <Button
         variant="contained"
         sx={{ width: 150, m: 1 }}
-        onClick={handleSubmit}
-        loading={isSubmitting}
+        onClick={() => exportMutation.mutate(columns)}
+        loading={exportMutation.isPending}
       >
         Export
       </Button>
