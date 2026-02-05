@@ -1,4 +1,7 @@
+import { restoreData } from "@/service/dataService";
 import { Box, Button, FormHelperText, Grid, Typography } from "@mui/material";
+import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import { useFormik } from "formik";
 import Swal from "sweetalert2";
 import * as Yup from "yup";
@@ -10,8 +13,33 @@ export default function Restore() {
       .test(
         "fileType",
         "Hanya file SQL yang diperbolehkan",
-        (value) => value && value instanceof File && value.name.endsWith(".sql")
+        (value) =>
+          value && value instanceof File && value.name.endsWith(".sql"),
       ),
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: restoreData,
+    onSuccess: () => {
+      Swal.fire({
+        icon: "success",
+        title: "Backup Restore Sukses",
+        text: "Data backup telah berhasil dikembalikan.",
+        confirmButtonText: "OK",
+      });
+    },
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.response?.data?.error || error.message
+          : "Terjadi kesalahan tak terduga saat mengembalikan data backup.";
+      Swal.fire({
+        icon: "error",
+        title: "Restore Gagal",
+        text: errorMessage,
+        confirmButtonText: "OK",
+      });
+    },
   });
 
   const formik = useFormik({
@@ -19,7 +47,7 @@ export default function Restore() {
       file: null,
     },
     validationSchema,
-    onSubmit: async (values, { setSubmitting }) => {
+    onSubmit: async (values) => {
       const result = await Swal.fire({
         title: "Are you sure?",
         text: "This action cannot be revert",
@@ -34,43 +62,9 @@ export default function Restore() {
         return;
       }
 
-      try {
-        setSubmitting(true);
-        const formData = new FormData();
-        if (values.file) {
-          formData.set("file", values.file as File);
-        }
+      if (!values.file) return;
 
-        const response = await fetch("/api/backup", {
-          cache: "no-store",
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          const { error } = await response.json();
-          throw new Error(error || "Gagal mengembalikan data backup.");
-        }
-
-        Swal.fire({
-          icon: "success",
-          title: "Backup Restore Sukses",
-          text: "Data backup telah berhasil dikembalikan.",
-          confirmButtonText: "OK",
-        });
-      } catch (error) {
-        Swal.fire({
-          icon: "error",
-          title: "Restore Gagal",
-          text:
-            error instanceof Error
-              ? error.message
-              : "Terjadi kesalahan tak terduga",
-          confirmButtonText: "OK",
-        });
-      } finally {
-        setSubmitting(false);
-      }
+      restoreMutation.mutate(values.file as File);
     },
   });
 
@@ -90,7 +84,7 @@ export default function Restore() {
               onChange={(event) => {
                 formik.setFieldValue(
                   "file",
-                  event.currentTarget.files?.[0] || null
+                  event.currentTarget.files?.[0] || null,
                 );
               }}
               onBlur={formik.handleBlur}
@@ -108,7 +102,7 @@ export default function Restore() {
           type="submit"
           color="info"
           variant="contained"
-          loading={formik.isSubmitting}
+          loading={restoreMutation.isPending}
         >
           Restore
         </Button>

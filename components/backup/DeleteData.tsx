@@ -1,52 +1,46 @@
+import { deleteData } from "@/service/dataService";
 import { Box, Button, Typography } from "@mui/material";
-import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import Swal from "sweetalert2";
 
 export default function DeleteData() {
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleClick = async () => {
-    const result = await Swal.fire({
-      title: "Are you sure?",
-      text: "This action cannot be revert",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, I'm sure!",
-    });
-
-    if (!result.isConfirmed) {
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const response = await fetch("/api/backup", {
-        method: "DELETE",
-        cache: "no-store",
-      });
-
-      if (!response.ok) {
-        const { error } = await response.json();
-        throw new Error(error || "Failed to delete data");
-      }
-
+  const deleteMutation = useMutation({
+    mutationFn: deleteData,
+    onSuccess: () => {
       Swal.fire({
         icon: "success",
         title: "Success",
         text: "All data deleted successfully.",
         confirmButtonText: "OK",
       });
-    } catch (error) {
+    },
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.response?.data?.error || error.message
+          : "Unknown error";
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: error instanceof Error ? error.message : "Unknown error",
+        text: errorMessage,
         confirmButtonText: "OK",
       });
-    } finally {
-      setIsLoading(false);
+    },
+  });
+
+  const handleDelete = async () => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "This action will delete all data permanently!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      deleteMutation.mutate();
     }
   };
 
@@ -58,8 +52,8 @@ export default function DeleteData() {
       <Button
         variant="contained"
         color="error"
-        loading={isLoading}
-        onClick={handleClick}
+        loading={deleteMutation.isPending}
+        onClick={handleDelete}
       >
         Delete
       </Button>
