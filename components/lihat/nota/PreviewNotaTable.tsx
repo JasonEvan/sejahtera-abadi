@@ -111,7 +111,7 @@ export default function PreviewNotaTable({
 
   const handleClickDetail = (
     details: DetailTransaksiTableRow[],
-    nilaiNota: number
+    nilaiNota: number,
   ) => {
     setData(details, nilaiNota.toLocaleString("id-ID"));
     if (type === "penjualan") {

@@ -2,26 +2,17 @@ import { Button, Grid, TextField } from "@mui/material";
 import { useFormik } from "formik";
 
 type FormNotaProps = {
-  handleSubmit: (nomorNota: string) => Promise<void>;
-  handleError: (error: string) => void;
+  handleSubmit: (nomorNota: string) => void;
+  isLoading: boolean;
 };
 
-export default function FormNota({ handleSubmit, handleError }: FormNotaProps) {
+export default function FormNota({ handleSubmit, isLoading }: FormNotaProps) {
   const formik = useFormik({
     initialValues: {
       nomornota: "",
     },
-    onSubmit: async (values, { setSubmitting }) => {
-      try {
-        setSubmitting(true);
-        await handleSubmit(values.nomornota);
-      } catch (error) {
-        handleError(
-          error instanceof Error ? error.message : "An error occurred"
-        );
-      } finally {
-        setSubmitting(false);
-      }
+    onSubmit: (values) => {
+      handleSubmit(values.nomornota);
     },
   });
 
@@ -42,7 +33,7 @@ export default function FormNota({ handleSubmit, handleError }: FormNotaProps) {
           />
         </Grid>
       </Grid>
-      <Button type="submit" variant="contained" loading={formik.isSubmitting}>
+      <Button type="submit" variant="contained" loading={isLoading}>
         Search
       </Button>
     </form>

@@ -2,50 +2,39 @@
 
 import FormNota from "@/components/lihat/nota/FormNota";
 import PreviewNotaTable from "@/components/lihat/nota/PreviewNotaTable";
-import { DetailTransaksiTableRow } from "@/lib/types";
+import { getJualByNomorNota } from "@/service/jualService";
 import { Box, Typography } from "@mui/material";
-import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import Swal from "sweetalert2";
 
 export default function PreviewNotaPenjualanPage() {
-  const [data, setData] = useState<DetailTransaksiTableRow[]>([]);
-
-  const handleSubmit = async (nomorNota: string) => {
-    const params = {
-      nomornota: nomorNota,
-    };
-
-    const queryParams = new URLSearchParams(params);
-
-    const response = await fetch(
-      `/api/nota/penjualan/lihat?${queryParams.toString()}`
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch data");
-    }
-
-    const { data } = await response.json();
-    setData(data);
-  };
-
-  const handleError = (error: string) => {
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: error,
-      confirmButtonText: "OK",
-    });
-    setData([]);
-  };
+  const jualMutation = useMutation({
+    mutationFn: getJualByNomorNota,
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.message
+          : "An unexpected error occurred while fetching the nota.";
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMessage,
+        confirmButtonText: "OK",
+      });
+    },
+  });
 
   return (
     <Box>
       <Typography variant="h6" gutterBottom sx={{ displayPrint: "none" }}>
         Nota Penjualan
       </Typography>
-      <FormNota handleSubmit={handleSubmit} handleError={handleError} />
-      <PreviewNotaTable data={data} type="penjualan" />
+      <FormNota
+        handleSubmit={jualMutation.mutate}
+        isLoading={jualMutation.isPending}
+      />
+      <PreviewNotaTable data={jualMutation.data?.data || []} type="penjualan" />
     </Box>
   );
 }

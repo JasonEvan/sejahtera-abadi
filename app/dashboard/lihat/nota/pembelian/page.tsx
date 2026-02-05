@@ -2,50 +2,39 @@
 
 import FormNota from "@/components/lihat/nota/FormNota";
 import PreviewNotaTable from "@/components/lihat/nota/PreviewNotaTable";
-import { DetailTransaksiTableRow } from "@/lib/types";
+import { getBeliByNomorNota } from "@/service/beliService";
 import { Box, Typography } from "@mui/material";
-import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
+import { AxiosError } from "axios";
 import Swal from "sweetalert2";
 
 export default function PreviewNotaPembelianPage() {
-  const [data, setData] = useState<DetailTransaksiTableRow[]>([]);
-
-  const handleSubmit = async (nomorNota: string) => {
-    const params = {
-      nomornota: nomorNota,
-    };
-
-    const queryParams = new URLSearchParams(params);
-
-    const response = await fetch(
-      `/api/nota/pembelian/lihat?${queryParams.toString()}`
-    );
-
-    if (!response.ok) {
-      throw new Error("Failed to fetch data");
-    }
-
-    const { data } = await response.json();
-    setData(data);
-  };
-
-  const handleError = (error: string) => {
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: error,
-      confirmButtonText: "OK",
-    });
-    setData([]);
-  };
+  const beliMutation = useMutation({
+    mutationFn: getBeliByNomorNota,
+    onError: (error: unknown) => {
+      const errorMessage =
+        error instanceof AxiosError
+          ? error.message
+          : "An unexpected error occurred while fetching the nota.";
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: errorMessage,
+        confirmButtonText: "OK",
+      });
+    },
+  });
 
   return (
     <Box>
       <Typography variant="h6" gutterBottom>
         Nota Pembelian
       </Typography>
-      <FormNota handleSubmit={handleSubmit} handleError={handleError} />
-      <PreviewNotaTable data={data} type="pembelian" />
+      <FormNota
+        handleSubmit={beliMutation.mutate}
+        isLoading={beliMutation.isPending}
+      />
+      <PreviewNotaTable data={beliMutation.data?.data || []} type="pembelian" />
     </Box>
   );
 }
