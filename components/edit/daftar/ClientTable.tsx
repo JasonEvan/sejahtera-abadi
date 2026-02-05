@@ -11,11 +11,14 @@ import {
   TableRow,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { modals } from "@/lib/modal";
 import { client } from "@/app/generated/prisma";
 import Swal from "sweetalert2";
 import EditClientForm from "./EditClientForm";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getClients } from "@/service/tambah/clientService";
+import { AxiosError } from "axios";
 
 interface Column {
   id:
@@ -69,56 +72,51 @@ export default function ClientTable() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
 
-  const [dataClient, setDataClient] = useState<client[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
 
-  const fetchClients = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch("/api/client", {
-        cache: "no-store",
-      });
+  const queryClient = useQueryClient();
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["client"],
+    queryFn: getClients,
+    staleTime: Infinity,
+  });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch clients");
-      }
-
-      const { data } = await response.json();
-      setDataClient(data);
-    } catch (error) {
+  useEffect(() => {
+    if (isError) {
       Swal.fire({
         icon: "error",
         title: "Error",
         text:
-          error instanceof Error ? error.message : "Failed to fetch clients",
+          error instanceof AxiosError
+            ? error.response?.data?.error || error.message
+            : "An unexpected error occurred while fetching client data.",
         confirmButtonText: "OK",
       });
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    fetchClients();
-  }, [fetchClients]);
+  }, [isError, error]);
 
   const handleEdit = (data: client) => {
     modals.open({
       title: "Edit Client",
       type: "form",
       size: "sm",
-      children: <EditClientForm {...data} onSaveSuccess={fetchClients} />,
+      children: (
+        <EditClientForm
+          {...data}
+          onSaveSuccess={() =>
+            queryClient.invalidateQueries({ queryKey: ["client"] })
+          }
+        />
+      ),
     });
   };
 
@@ -156,7 +154,7 @@ export default function ClientTable() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {dataClient
+            {data?.data
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => (
                 <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
@@ -192,7 +190,7 @@ export default function ClientTable() {
       <TablePagination
         rowsPerPageOptions={[20, 50]}
         component="div"
-        count={dataClient.length}
+        count={data?.data.length || 0}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}

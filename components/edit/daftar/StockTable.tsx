@@ -11,11 +11,14 @@ import {
   TableRow,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { modals } from "@/lib/modal";
 import { stock } from "@/app/generated/prisma";
 import Swal from "sweetalert2";
 import EditStockForm from "./EditStockForm";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { getBarang } from "@/service/tambah/barangService";
+import { AxiosError } from "axios";
 
 interface Column {
   id:
@@ -72,55 +75,51 @@ export default function StockTable() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(20);
 
-  const [dataStock, setDataStock] = useState<stock[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage);
   };
 
   const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
   };
 
-  const fetchStocks = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch("/api/barang", {
-        cache: "no-store",
-      });
+  const queryClient = useQueryClient();
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ["barang"],
+    queryFn: getBarang,
+    staleTime: Infinity,
+  });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch stocks");
-      }
-
-      const { data } = await response.json();
-      setDataStock(data);
-    } catch (error) {
+  useEffect(() => {
+    if (isError) {
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: error instanceof Error ? error.message : "Failed to fetch stocks",
+        text:
+          error instanceof AxiosError
+            ? error.response?.data?.error || error.message
+            : "An unexpected error occurred while fetching stock data.",
         confirmButtonText: "OK",
       });
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
-
-  useEffect(() => {
-    fetchStocks();
-  }, [fetchStocks]);
+  }, [isError, error]);
 
   const handleEdit = (data: stock) => {
     modals.open({
       title: "Edit Stock",
       type: "form",
       size: "sm",
-      children: <EditStockForm {...data} onSaveSuccess={fetchStocks} />,
+      children: (
+        <EditStockForm
+          {...data}
+          onSaveSuccess={() =>
+            queryClient.invalidateQueries({ queryKey: ["barang"] })
+          }
+        />
+      ),
     });
   };
 
@@ -158,7 +157,7 @@ export default function StockTable() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {dataStock
+            {data?.data
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((row) => (
                 <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
@@ -194,7 +193,7 @@ export default function StockTable() {
       <TablePagination
         rowsPerPageOptions={[20, 50]}
         component="div"
-        count={dataStock.length}
+        count={data?.data.length || 0}
         rowsPerPage={rowsPerPage}
         page={page}
         onPageChange={handleChangePage}

@@ -1,3 +1,4 @@
+import { salesman } from "@/app/generated/prisma";
 import api from "@/lib/axios";
 
 interface TambahSalesmanData {
@@ -11,5 +12,10 @@ export const tambahSales = async (
   data: TambahSalesmanData,
 ): Promise<{ message: string }> => {
   const response = await api.post<{ message: string }>("/sales", data);
+  return response.data;
+};
+
+export const getSalesmen = async () => {
+  const response = await api.get<{ data: salesman[] }>("/sales");
   return response.data;
 };

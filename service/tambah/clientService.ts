@@ -23,3 +23,9 @@ export const getClientNames = async () => {
 
   return response.data;
 };
+
+export const getClients = async () => {
+  const response = await api.get<{ data: client[] }>("/client");
+
+  return response.data;
+};
