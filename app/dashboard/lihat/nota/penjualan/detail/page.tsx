@@ -33,30 +33,45 @@ export default function NotaPenjualanPage() {
 
     // Table headers
     const colX = [5, 10, 80, 90, 110, 125];
+    const columnWidths = [5, 70, 10, 20, 15, 15];
+    const headers = ["No", "Nama Barang", "Qty", "Satuan", "Harga", "Total"];
+    const numericalCols = [0, 2, 4, 5];
     let y = 23;
-    pdf.text("No", colX[0], y);
-    pdf.text("Nama Barang", colX[1], y);
-    pdf.text("Qty", colX[2], y);
-    pdf.text("Satuan", colX[3], y);
-    pdf.text("Harga", colX[4], y);
-    pdf.text("Total", colX[5], y);
+    headers.forEach((header, i) => {
+      // Align right for numerical columns
+      // -1 for padding
+      const x = numericalCols.includes(i)
+        ? colX[i] + columnWidths[i] - pdf.getTextWidth(header) - 1
+        : colX[i];
+      pdf.text(header, x, y);
+    });
     y += 5;
 
     // Table rows
     let rowCount = 0;
     details.forEach((row, index) => {
-      pdf.text((index + 1).toString(), colX[0], y);
-      pdf.text(row.nama_barang, colX[1], y);
-      pdf.text(row.qty_barang.toString(), colX[2], y);
-      pdf.text(row.satuan_barang, colX[3], y);
-      pdf.text(row.harga_barang.toLocaleString(), colX[4], y);
-      pdf.text(row.total_harga.toLocaleString(), colX[5], y);
+      const texts = [
+        (index + 1).toString(),
+        row.nama_barang,
+        row.qty_barang.toString(),
+        row.satuan_barang,
+        row.harga_barang.toLocaleString(),
+        row.total_harga.toLocaleString(),
+      ];
+
+      texts.forEach((text, i) => {
+        const x = numericalCols.includes(i)
+          ? colX[i] + columnWidths[i] - pdf.getTextWidth(text) - 1
+          : colX[i];
+        pdf.text(text, x, y);
+      });
+
       y += 4;
       rowCount++;
 
       if (rowCount % 15 === 0 && index < details.length - 1) {
         pdf.addPage();
-        y = 10;
+
         // Redraw header
         pdf.text("SA", 5, 7);
         pdf.text(details[0].tanggal_nota, 80, 7);
@@ -73,19 +88,19 @@ export default function NotaPenjualanPage() {
 
         // Redraw table headers
         y = 23;
-        pdf.text("No", colX[0], y);
-        pdf.text("Nama Barang", colX[1], y);
-        pdf.text("Qty", colX[2], y);
-        pdf.text("Satuan", colX[3], y);
-        pdf.text("Harga", colX[4], y);
-        pdf.text("Total", colX[5], y);
+        headers.forEach((header, i) => {
+          const x = numericalCols.includes(i)
+            ? colX[i] + columnWidths[i] - pdf.getTextWidth(header) - 1
+            : colX[i];
+          pdf.text(header, x, y);
+        });
         y += 5;
       }
     });
 
     // Total row
     pdf.text("TOTAL", colX[4], y);
-    pdf.text(total, colX[5], y);
+    pdf.text(total, colX[5] + columnWidths[5] - pdf.getTextWidth(total) - 1, y);
     y += 10;
 
     // Bottom text
