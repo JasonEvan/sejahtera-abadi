@@ -32,7 +32,7 @@ export default function NotaPenjualanPage() {
     pdf.text(address, 105, 13);
 
     // Table headers
-    const colX = [5, 15, 70, 90, 110, 125];
+    const colX = [5, 10, 80, 90, 110, 125];
     let y = 23;
     pdf.text("No", colX[0], y);
     pdf.text("Nama Barang", colX[1], y);
