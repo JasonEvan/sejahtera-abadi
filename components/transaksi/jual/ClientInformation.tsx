@@ -13,11 +13,12 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import { useNamaClient } from "@/hooks/useNamaClient";
 import { useNamaSales } from "@/hooks/useNamaSales";
-import { useLastNomorNota } from "@/hooks/useLastNomorNota";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useJualStore } from "@/hooks/useJualStore";
 import Swal from "sweetalert2";
 import { AxiosError } from "axios";
+import { getLastNomorNota } from "@/service/salesService";
 
 export default function ClientInformation() {
   const {
@@ -32,11 +33,6 @@ export default function ClientInformation() {
     isError: isErrorSales,
     error: errorSales,
   } = useNamaSales();
-  const {
-    lastNomorNota,
-    isLoading: lastNomorNotaLoading,
-    fetchLastNomorNota,
-  } = useLastNomorNota();
   const {
     setClientInformation,
     setClientInformationDone,
@@ -80,6 +76,21 @@ export default function ClientInformation() {
     },
   });
 
+  const {
+    data: lastNomorNota,
+    isLoading: lastNomorNotaLoading,
+    error: lastNomorNotaError,
+  } = useQuery({
+    queryKey: ["last-nota", formik.values.namasales],
+    queryFn: () => getLastNomorNota(formik.values.namasales),
+    select: (data) => {
+      if (data.data.length === 0) return "";
+      const lastNum = (data.data[0].no_nota + 1).toString().padStart(5, "0");
+      return `${data.data[0].no_depan ? data.data[0].no_depan.toString() : "0"}${lastNum}`;
+    },
+    enabled: Boolean(formik.values.namasales && !clientInformationDone),
+  });
+
   useEffect(() => {
     if (isError) {
       Swal.fire({
@@ -109,11 +120,19 @@ export default function ClientInformation() {
   }, [isErrorSales, errorSales]);
 
   useEffect(() => {
-    if (formik.values.namasales) {
-      fetchLastNomorNota(formik.values.namasales);
+    if (lastNomorNotaError) {
+      Swal.fire({
+        title: "Error",
+        text:
+          lastNomorNotaError instanceof AxiosError
+            ? lastNomorNotaError.response?.data?.error ||
+              lastNomorNotaError.message
+            : "An unexpected error occurred",
+        icon: "error",
+        confirmButtonText: "OK",
+      });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [formik.values.namasales]);
+  }, [lastNomorNotaError]);
 
   useEffect(() => {
     formik.setFieldValue("nomornota", lastNomorNota || "");

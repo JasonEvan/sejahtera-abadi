@@ -26,3 +26,13 @@ export const getSalesmenNames = async () => {
   );
   return response.data;
 };
+
+export const getLastNomorNota = async (namasales: string) => {
+  const params = { namasales };
+  const queryParams = new URLSearchParams(params);
+
+  const response = await api.get<{ data: salesman[] }>(
+    `/sales?${queryParams.toString()}`,
+  );
+  return response.data;
+};

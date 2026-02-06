@@ -100,9 +100,12 @@ export default function SalesTable() {
       children: (
         <EditSalesForm
           {...data}
-          onSaveSuccess={() =>
-            queryClient.invalidateQueries({ queryKey: ["salesman"] })
-          }
+          onSaveSuccess={() => {
+            queryClient.invalidateQueries({ queryKey: ["salesman"] });
+            queryClient.invalidateQueries({
+              queryKey: ["last-nota", data.nama_sales],
+            });
+          }}
         />
       ),
     });
