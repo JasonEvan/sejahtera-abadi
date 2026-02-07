@@ -12,7 +12,7 @@ export default function NotaPenjualanPage() {
   const handlePrint = async () => {
     if (!details || details.length === 0) return;
 
-    const pdf = new jsPDF("p", "mm", [140, 217]);
+    const pdf = new jsPDF("p", "mm", [217, 140]);
 
     pdf.setFont("helvetica", "bold");
     pdf.setFontSize(6.3);
