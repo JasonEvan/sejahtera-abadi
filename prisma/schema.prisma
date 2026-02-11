@@ -22,8 +22,8 @@ model beli {
   diskon_nota  Float
   created_at   DateTime @default(now()) @db.Timestamp(0)
 
-  client client   @relation(fields: [id_client], references: [id])
-  nota   bnota    @relation(fields: [nomor_nota], references: [nomor_nota])
+  client client   @relation(fields: [id_client], references: [id], onDelete: Cascade)
+  nota   bnota    @relation(fields: [nomor_nota], references: [nomor_nota], onDelete: Cascade)
   bretur bretur[]
 }
 
@@ -35,8 +35,8 @@ model blunas {
   nomor_nota      String   @db.VarChar(10)
   lunas_nota      Int
 
-  client client @relation(fields: [id_client], references: [id])
-  nota   bnota  @relation(fields: [nomor_nota], references: [nomor_nota])
+  client client @relation(fields: [id_client], references: [id], onDelete: Cascade)
+  nota   bnota  @relation(fields: [nomor_nota], references: [nomor_nota], onDelete: Cascade)
 }
 
 model bnota {
@@ -50,7 +50,7 @@ model bnota {
   diskon_lunas Float
   saldo_nota   Int
 
-  client client   @relation(fields: [id_client], references: [id])
+  client client   @relation(fields: [id_client], references: [id], onDelete: Cascade)
   beli   beli[]
   blunas blunas[]
   bretur bretur[]
@@ -69,9 +69,9 @@ model bretur {
   total_harga   Int
   tanggal_retur DateTime? @db.Date
 
-  client client @relation(fields: [id_client], references: [id])
-  beli   beli   @relation(fields: [id_beli], references: [id])
-  nota   bnota  @relation(fields: [nomor_nota], references: [nomor_nota])
+  client client @relation(fields: [id_client], references: [id], onDelete: Cascade)
+  beli   beli   @relation(fields: [id_beli], references: [id], onDelete: Cascade)
+  nota   bnota  @relation(fields: [nomor_nota], references: [nomor_nota], onDelete: Cascade)
 }
 
 model client {
@@ -107,8 +107,8 @@ model jlunas {
   nomor_nota      String   @db.VarChar(10)
   lunas_nota      Int
 
-  client client @relation(fields: [id_client], references: [id])
-  nota   jnota  @relation(fields: [nomor_nota], references: [nomor_nota])
+  client client @relation(fields: [id_client], references: [id], onDelete: Cascade)
+  nota   jnota  @relation(fields: [nomor_nota], references: [nomor_nota], onDelete: Cascade)
 }
 
 model jnota {
@@ -122,7 +122,7 @@ model jnota {
   diskon_lunas Float
   saldo_nota   Int
 
-  client client   @relation(fields: [id_client], references: [id])
+  client client   @relation(fields: [id_client], references: [id], onDelete: Cascade)
   jlunas jlunas[]
   jual   jual[]
   jretur jretur[]
@@ -142,10 +142,10 @@ model jretur {
   tanggal_retur DateTime? @db.Date
   nama_sales    String    @db.VarChar(100)
 
-  client   client   @relation(fields: [id_client], references: [id])
-  jual     jual     @relation(fields: [id_jual], references: [id])
-  nota     jnota    @relation(fields: [nomor_nota], references: [nomor_nota])
-  salesman salesman @relation(fields: [nama_sales], references: [nama_sales])
+  client   client   @relation(fields: [id_client], references: [id], onDelete: Cascade)
+  jual     jual     @relation(fields: [id_jual], references: [id], onDelete: Cascade)
+  nota     jnota    @relation(fields: [nomor_nota], references: [nomor_nota], onDelete: Cascade)
+  salesman salesman @relation(fields: [nama_sales], references: [nama_sales], onDelete: Cascade)
 }
 
 model jual {
@@ -162,10 +162,10 @@ model jual {
   created_at   DateTime @default(now()) @db.Timestamp(0)
   nama_sales   String   @db.VarChar(100)
 
-  client   client   @relation(fields: [id_client], references: [id])
-  nota     jnota    @relation(fields: [nomor_nota], references: [nomor_nota])
+  client   client   @relation(fields: [id_client], references: [id], onDelete: Cascade)
+  nota     jnota    @relation(fields: [nomor_nota], references: [nomor_nota], onDelete: Cascade)
   jretur   jretur[]
-  salesman salesman @relation(fields: [nama_sales], references: [nama_sales])
+  salesman salesman @relation(fields: [nama_sales], references: [nama_sales], onDelete: Cascade)
 }
 
 model salesman {
