@@ -36,3 +36,8 @@ export const getLastNomorNota = async (namasales: string) => {
   );
   return response.data;
 };
+
+export const deleteSalesman = async (id: number) => {
+  const response = await api.delete<{ message: string }>(`/sales/${id}`);
+  return response.data;
+};

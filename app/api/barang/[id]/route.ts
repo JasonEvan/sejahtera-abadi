@@ -6,7 +6,7 @@ import z from "zod";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const id = Number((await params).id);
@@ -43,13 +43,79 @@ export async function PUT(
     logger.error(
       `PUT /api/barang/[id] Error updating stock: ${
         error instanceof Error ? error.message : error
-      }`
+      }`,
     );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Internal Server Error",
       },
-      { status: 500 }
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const id = Number((await params).id);
+    if (isNaN(id)) {
+      logger.warn(
+        "DELETE /api/barang/[id]: Invalid ID provided for stock deletion",
+      );
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
+
+    const stock = await db.stock.findUnique({
+      where: { id },
+    });
+
+    if (!stock) {
+      logger.warn(`DELETE /api/barang/[id]: Stock with ID ${id} not found`);
+      return NextResponse.json({ error: "Stock not found" }, { status: 404 });
+    }
+
+    // Check if the item is used in any transactions
+    const hasBeli = await db.beli.findFirst({
+      where: { nama_barang: stock.nama_barang },
+    });
+
+    const hasJual = await db.jual.findFirst({
+      where: { nama_barang: stock.nama_barang },
+    });
+
+    const hasTransactions = Boolean(hasBeli || hasJual);
+
+    if (hasTransactions) {
+      logger.warn(
+        `DELETE /api/barang/[id]: Cannot delete stock with ID ${id} as it is used in transactions`,
+      );
+      return NextResponse.json(
+        {
+          error: "Cannot delete stock item as it is used in transactions.",
+        },
+        { status: 400 },
+      );
+    }
+
+    await db.stock.delete({
+      where: { id },
+    });
+
+    logger.info(`DELETE /api/barang/${id}: Stock deleted successfully.`);
+    return NextResponse.json({ message: "Stock deleted successfully" });
+  } catch (error) {
+    logger.error(
+      `DELETE /api/barang/[id] Error deleting stock: ${
+        error instanceof Error ? error.message : error
+      }`,
+    );
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      },
+      { status: 500 },
     );
   }
 }

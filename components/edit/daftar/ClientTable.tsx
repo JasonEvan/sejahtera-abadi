@@ -11,13 +11,14 @@ import {
   TableRow,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useEffect, useState } from "react";
 import { modals } from "@/lib/modal";
 import { client } from "@/app/generated/prisma";
 import Swal from "sweetalert2";
 import EditClientForm from "./EditClientForm";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getClients } from "@/service/clientService";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { deleteClient, getClients } from "@/service/clientService";
 import { AxiosError } from "axios";
 
 interface Column {
@@ -63,7 +64,7 @@ const columns: readonly Column[] = [
   {
     id: "action",
     label: "Action",
-    minWidth: 50,
+    minWidth: 100,
     align: "center",
   },
 ];
@@ -88,6 +89,30 @@ export default function ClientTable() {
     queryKey: ["client"],
     queryFn: getClients,
     staleTime: Infinity,
+  });
+
+  const deleteClientMutation = useMutation({
+    mutationFn: deleteClient,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["client"] });
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: data.message,
+        confirmButtonText: "OK",
+      });
+    },
+    onError: (error) => {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error instanceof AxiosError
+            ? error.response?.data?.error || error.message
+            : "An unexpected error occurred while deleting the client.",
+        confirmButtonText: "OK",
+      });
+    },
   });
 
   useEffect(() => {
@@ -120,6 +145,22 @@ export default function ClientTable() {
     });
   };
 
+  const handleDelete = async (id: number) => {
+    const result = await Swal.fire({
+      icon: "warning",
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      deleteClientMutation.mutate(id);
+    }
+  };
+
   if (isLoading) {
     return (
       <Box
@@ -138,7 +179,7 @@ export default function ClientTable() {
 
   return (
     <Box sx={{ width: "100%", marginY: 2 }}>
-      <TableContainer sx={{ maxHeight: 440 }}>
+      <TableContainer sx={{ maxHeight: 500 }}>
         <Table stickyHeader aria-label="sticky table">
           <TableHead>
             <TableRow>
@@ -168,6 +209,13 @@ export default function ClientTable() {
                             aria-label="edit"
                           >
                             <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            onClick={() => handleDelete(row.id)}
+                            color="error"
+                            aria-label="delete"
+                          >
+                            <DeleteIcon />
                           </IconButton>
                         </TableCell>
                       );

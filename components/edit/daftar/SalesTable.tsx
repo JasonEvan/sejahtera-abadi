@@ -11,13 +11,14 @@ import {
   TableRow,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useEffect, useState } from "react";
 import { modals } from "@/lib/modal";
 import { salesman } from "@/app/generated/prisma";
 import Swal from "sweetalert2";
 import EditSalesForm from "./EditSalesForm";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getSalesmen } from "@/service/salesService";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { deleteSalesman, getSalesmen } from "@/service/salesService";
 import { AxiosError } from "axios";
 
 interface Column {
@@ -51,7 +52,7 @@ const columns: readonly Column[] = [
   {
     id: "action",
     label: "Action",
-    minWidth: 50,
+    minWidth: 100,
     align: "center",
   },
 ];
@@ -76,6 +77,30 @@ export default function SalesTable() {
     queryKey: ["salesman"],
     queryFn: getSalesmen,
     staleTime: Infinity,
+  });
+
+  const deleteSalesMutation = useMutation({
+    mutationFn: deleteSalesman,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["salesman"] });
+      Swal.fire({
+        icon: "success",
+        title: "Deleted!",
+        text: data.message,
+        confirmButtonText: "OK",
+      });
+    },
+    onError: (error) => {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error instanceof AxiosError
+            ? error.response?.data?.error || error.message
+            : "An unexpected error occurred while deleting the salesman.",
+        confirmButtonText: "OK",
+      });
+    },
   });
 
   useEffect(() => {
@@ -109,6 +134,22 @@ export default function SalesTable() {
         />
       ),
     });
+  };
+
+  const handleDelete = async (id: number) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      deleteSalesMutation.mutate(id);
+    }
   };
 
   if (isLoading) {
@@ -159,6 +200,13 @@ export default function SalesTable() {
                             aria-label="edit"
                           >
                             <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            onClick={() => handleDelete(row.id)}
+                            color="error"
+                            aria-label="delete"
+                          >
+                            <DeleteIcon />
                           </IconButton>
                         </TableCell>
                       );

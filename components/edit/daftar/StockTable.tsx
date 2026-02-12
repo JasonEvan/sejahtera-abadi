@@ -11,13 +11,14 @@ import {
   TableRow,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
 import { useEffect, useState } from "react";
 import { modals } from "@/lib/modal";
 import { stock } from "@/app/generated/prisma";
 import Swal from "sweetalert2";
 import EditStockForm from "./EditStockForm";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { getBarang } from "@/service/barangService";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { deleteBarang, getBarang } from "@/service/barangService";
 import { AxiosError } from "axios";
 
 interface Column {
@@ -66,7 +67,7 @@ const columns: readonly Column[] = [
   {
     id: "action",
     label: "Action",
-    minWidth: 50,
+    minWidth: 100,
     align: "center",
   },
 ];
@@ -91,6 +92,30 @@ export default function StockTable() {
     queryKey: ["barang"],
     queryFn: getBarang,
     staleTime: Infinity,
+  });
+
+  const deleteStockMutation = useMutation({
+    mutationFn: deleteBarang,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["barang"] });
+      Swal.fire({
+        icon: "success",
+        title: "Deleted!",
+        text: data.message,
+        confirmButtonText: "OK",
+      });
+    },
+    onError: (error) => {
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text:
+          error instanceof AxiosError
+            ? error.response?.data?.error || error.message
+            : "An unexpected error occurred while deleting the item.",
+        confirmButtonText: "OK",
+      });
+    },
   });
 
   useEffect(() => {
@@ -121,6 +146,22 @@ export default function StockTable() {
         />
       ),
     });
+  };
+
+  const handleDelete = async (id: number) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      deleteStockMutation.mutate(id);
+    }
   };
 
   if (isLoading) {
@@ -171,6 +212,13 @@ export default function StockTable() {
                             aria-label="edit"
                           >
                             <EditIcon />
+                          </IconButton>
+                          <IconButton
+                            onClick={() => handleDelete(row.id)}
+                            color="error"
+                            aria-label="delete"
+                          >
+                            <DeleteIcon />
                           </IconButton>
                         </TableCell>
                       );

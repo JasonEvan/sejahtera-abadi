@@ -42,3 +42,8 @@ export async function getPersediaan(namabarang: string) {
 
   return response.data;
 }
+
+export async function deleteBarang(id: number) {
+  const response = await api.delete<{ message: string }>(`/barang/${id}`);
+  return response.data;
+}

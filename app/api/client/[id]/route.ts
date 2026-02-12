@@ -6,7 +6,7 @@ import z from "zod";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const id = Number((await params).id);
@@ -38,20 +38,88 @@ export async function PUT(
     });
 
     logger.info(
-      `PUT /api/client/${id} succeeded. Client updated successfully.`
+      `PUT /api/client/${id} succeeded. Client updated successfully.`,
     );
     return NextResponse.json({ message: "Client updated successfully" });
   } catch (error) {
     logger.error(
       `PUT /api/client/[id] failed: ${
         error instanceof Error ? error.message : error
-      }`
+      }`,
     );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Internal Server Error",
       },
-      { status: 500 }
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const id = Number((await params).id);
+    if (isNaN(id)) {
+      logger.warn(
+        "DELETE /api/client/[id]: Invalid ID provided for client deletion",
+      );
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
+
+    const client = await db.client.findUnique({
+      where: { id },
+    });
+
+    if (!client) {
+      logger.warn(`DELETE /api/client/${id} failed: Client not found.`);
+      return NextResponse.json({ error: "Client not found" }, { status: 404 });
+    }
+
+    const hasBnota = await db.bnota.findFirst({
+      where: { id_client: id },
+    });
+
+    const hasJnota = await db.jnota.findFirst({
+      where: { id_client: id },
+    });
+
+    const hasTransactions = Boolean(hasBnota || hasJnota);
+
+    if (hasTransactions) {
+      logger.warn(
+        `DELETE /api/client/${id} failed: Cannot delete client as it is associated with existing transactions.`,
+      );
+      return NextResponse.json(
+        {
+          error:
+            "Cannot delete client as it is associated with existing transactions.",
+        },
+        { status: 400 },
+      );
+    }
+
+    await db.client.delete({
+      where: { id },
+    });
+
+    logger.info(
+      `DELETE /api/client/${id} succeeded. Client deleted successfully.`,
+    );
+    return NextResponse.json({ message: "Client deleted successfully" });
+  } catch (error) {
+    logger.error(
+      `DELETE /api/client/[id] failed: ${
+        error instanceof Error ? error.message : error
+      }`,
+    );
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      },
+      { status: 500 },
     );
   }
 }

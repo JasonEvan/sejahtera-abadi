@@ -29,3 +29,8 @@ export const getClients = async () => {
 
   return response.data;
 };
+
+export const deleteClient = async (id: number) => {
+  const response = await api.delete<{ message: string }>(`/client/${id}`);
+  return response.data;
+};

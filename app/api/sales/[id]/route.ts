@@ -6,7 +6,7 @@ import z from "zod";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const id = Number((await params).id);
@@ -41,13 +41,78 @@ export async function PUT(
     logger.error(
       `PUT /api/sales/[id] failed: ${
         error instanceof Error ? error.message : error
-      }`
+      }`,
     );
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Internal Server Error",
       },
-      { status: 500 }
+      { status: 500 },
+    );
+  }
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const id = Number((await params).id);
+    if (isNaN(id)) {
+      logger.warn(
+        "DELETE /api/sales/[id]: Invalid ID provided for client deletion",
+      );
+      return NextResponse.json({ error: "Invalid ID" }, { status: 400 });
+    }
+
+    const salesman = await db.salesman.findUnique({
+      where: { id },
+    });
+
+    if (!salesman) {
+      logger.warn(`DELETE /api/sales/${id} failed: Salesman not found`);
+      return NextResponse.json(
+        { error: "Salesman not found" },
+        { status: 404 },
+      );
+    }
+
+    const hasJual = await db.jual.findFirst({
+      where: { nama_sales: salesman.nama_sales },
+    });
+
+    const hasTransactions = Boolean(hasJual);
+
+    if (hasTransactions) {
+      logger.warn(
+        `DELETE /api/sales/${id} failed: Salesman has associated transactions.`,
+      );
+      return NextResponse.json(
+        {
+          error:
+            "Cannot delete salesman as it is associated with existing transactions.",
+        },
+        { status: 400 },
+      );
+    }
+
+    await db.salesman.delete({
+      where: { id },
+    });
+
+    logger.info(`DELETE /api/sales/${id} succeeded. Salesman deleted.`);
+    return NextResponse.json({ message: "Salesman deleted successfully" });
+  } catch (error) {
+    logger.error(
+      `DELETE /api/sales/[id] failed: ${
+        error instanceof Error ? error.message : error
+      }`,
+    );
+    return NextResponse.json(
+      {
+        error: error instanceof Error ? error.message : "Internal Server Error",
+      },
+      { status: 500 },
     );
   }
 }
